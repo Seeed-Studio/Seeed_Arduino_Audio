@@ -24,8 +24,8 @@ AudioSynthWaveform    waveform1;
 AudioOutputI2S        i2s1;
 AudioConnection       patchCord1(waveform1, 0, i2s1, 0);
 AudioConnection       patchCord2(waveform1, 0, i2s1, 1);
-AudioControlSGTL5000  sgtl5000_1;
-
+// AudioControlSGTL5000  sgtl5000_1;
+AudioControlWM8960 wm8960;
 Bounce button0 = Bounce(0, 15);
 Bounce button1 = Bounce(1, 15);
 Bounce button2 = Bounce(2, 15);
@@ -39,8 +39,8 @@ void setup() {
   pinMode(1, INPUT_PULLUP);
   pinMode(2, INPUT_PULLUP);
   Serial.begin(115200);
-  sgtl5000_1.enable();
-  sgtl5000_1.volume(0.3);
+  wm8960.enable();
+  wm8960.volume(1);
   waveform1.begin(WAVEFORM_SINE);
   delay(1000);
   button0.update();

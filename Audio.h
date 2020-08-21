@@ -68,6 +68,7 @@
 #ifndef SEEED_WIO_TERMINAL 
 #include "async_input_spdif3.h"
 #endif
+#include "control_wm8960.h"
 #include "control_sgtl5000.h"
 #include "control_wm8731.h"
 #include "control_ak4558.h"
