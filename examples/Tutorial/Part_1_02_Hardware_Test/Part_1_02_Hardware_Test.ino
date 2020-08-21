@@ -17,9 +17,9 @@
 #include <Wire.h>
 #include <SD.h>
 #include <SPI.h>
-#include <SerialFlash.h>
+// #include <SerialFlash.h>
 #include <Bounce.h>
-
+#include "elapsedMillis.h"
 AudioSynthWaveform    waveform1;
 AudioOutputI2S        i2s1;
 AudioConnection       patchCord1(waveform1, 0, i2s1, 0);

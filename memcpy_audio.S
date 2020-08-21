@@ -27,7 +27,7 @@
  * SOFTWARE.
  */
 
-#if defined (__ARM_ARCH_7EM__)
+#if defined (__ARM_ARCH_7EM__) || defined(__SAMD51__)
 #include <AudioStream.h>
 
 .cpu cortex-m4

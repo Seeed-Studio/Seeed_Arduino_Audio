@@ -27,20 +27,20 @@
 #ifndef Audio_h_
 #define Audio_h_
 
-#if TEENSYDUINO < 120
+#if TEENSYDUINO < 120 && !defined(SEEED_WIO_TERMINAL) 
 #error "Teensyduino version 1.20 or later is required to compile the Audio library."
 #endif
 #ifdef __AVR__
 #error "The Audio Library only works with Teensy 3.X.  Teensy 2.0 is unsupported."
 #endif
-
+#ifndef SEEED_WIO_TERMINAL 
 #include "DMAChannel.h"
 #if !defined(DMACHANNEL_HAS_BEGIN) || !defined(DMACHANNEL_HAS_BOOLEAN_CTOR)
 #error "You need to update DMAChannel.h & DMAChannel.cpp"
 #error "https://github.com/PaulStoffregen/cores/blob/master/teensy3/DMAChannel.h"
 #error "https://github.com/PaulStoffregen/cores/blob/master/teensy3/DMAChannel.cpp"
 #endif
-
+#endif
 // When changing multiple audio object settings that must update at
 // the same time, these functions allow the audio library interrupt
 // to be disabled.  For example, you may wish to begin playing a note
@@ -65,7 +65,9 @@
 #include "analyze_notefreq.h"
 #include "analyze_peak.h"
 #include "analyze_rms.h"
+#ifndef SEEED_WIO_TERMINAL 
 #include "async_input_spdif3.h"
+#endif
 #include "control_sgtl5000.h"
 #include "control_wm8731.h"
 #include "control_ak4558.h"
@@ -79,7 +81,6 @@
 #include "effect_envelope.h"
 #include "effect_multiply.h"
 #include "effect_delay.h"
-#include "effect_delay_ext.h"
 #include "effect_midside.h"
 #include "effect_reverb.h"
 #include "effect_freeverb.h"
@@ -90,6 +91,11 @@
 #include "filter_biquad.h"
 #include "filter_fir.h"
 #include "filter_variable.h"
+#include "output_i2s.h"
+#include "synth_waveform.h"
+
+#ifndef SEEED_WIO_TERMINAL 
+#include "effect_delay_ext.h"
 #include "input_adc.h"
 #include "input_adcs.h"
 #include "input_i2s.h"
@@ -104,7 +110,6 @@
 #include "mixer.h"
 #include "output_dac.h"
 #include "output_dacs.h"
-#include "output_i2s.h"
 #include "output_i2s2.h"
 #include "output_i2s_quad.h"
 #include "output_i2s_hex.h"
@@ -127,7 +132,6 @@
 #include "record_queue.h"
 #include "synth_tonesweep.h"
 #include "synth_sine.h"
-#include "synth_waveform.h"
 #include "synth_dc.h"
 #include "synth_whitenoise.h"
 #include "synth_pinknoise.h"
@@ -135,5 +139,5 @@
 #include "synth_simple_drum.h"
 #include "synth_pwm.h"
 #include "synth_wavetable.h"
-
+#endif
 #endif

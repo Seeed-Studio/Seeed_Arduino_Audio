@@ -29,7 +29,12 @@
 
 #include "Arduino.h"
 #include "AudioStream.h"
+#ifndef SEEED_WIO_TERMINAL 
 #include "DMAChannel.h"
+#else
+#include "Adafruit_ZeroDMA.h"
+#include "Adafruit_ZeroI2S.h"
+#endif
 
 class AudioOutputI2S : public AudioStream
 {
@@ -52,8 +57,17 @@ protected:
 	static audio_block_t *block_left_1st;
 	static audio_block_t *block_right_1st;
 	static bool update_responsibility;
+	
+
+#ifndef SEEED_WIO_TERMINAL 
 	static DMAChannel dma;
 	static void isr(void);
+#else
+	static Adafruit_ZeroI2S *i2s;
+	static Adafruit_ZeroDMA *dma;
+	static DmacDescriptor *desc;
+	static void isr(Adafruit_ZeroDMA *dma);
+#endif
 private:
 	static audio_block_t *block_left_2nd;
 	static audio_block_t *block_right_2nd;

@@ -35,13 +35,22 @@ audio_block_t * AudioOutputI2S::block_right_2nd = NULL;
 uint16_t  AudioOutputI2S::block_left_offset = 0;
 uint16_t  AudioOutputI2S::block_right_offset = 0;
 bool AudioOutputI2S::update_responsibility = false;
+
+#ifndef SEEED_WIO_TERMINAL 
 DMAChannel AudioOutputI2S::dma(false);
 DMAMEM __attribute__((aligned(32))) static uint32_t i2s_tx_buffer[AUDIO_BLOCK_SAMPLES];
+#else
+Adafruit_ZeroI2S *AudioOutputI2S::i2s;
+Adafruit_ZeroDMA *AudioOutputI2S::dma;
+DmacDescriptor *AudioOutputI2S::desc;
+static ZeroDMAstatus    stat;
+DMAMEM static uint32_t i2s_tx_buffer[AUDIO_BLOCK_SAMPLES];
+#endif
 
 #if defined(__IMXRT1062__)
 #include "utility/imxrt_hw.h"
 #endif
-
+#ifndef SEEED_WIO_TERMINAL 
 void AudioOutputI2S::begin(void)
 {
 	dma.begin(true); // Allocate the DMA channel first
@@ -222,58 +231,6 @@ void AudioOutputI2S::isr(void)
 	}
 #endif
 }
-
-
-
-
-void AudioOutputI2S::update(void)
-{
-	// null audio device: discard all incoming data
-	//if (!active) return;
-	//audio_block_t *block = receiveReadOnly();
-	//if (block) release(block);
-
-	audio_block_t *block;
-	block = receiveReadOnly(0); // input 0 = left channel
-	if (block) {
-		__disable_irq();
-		if (block_left_1st == NULL) {
-			block_left_1st = block;
-			block_left_offset = 0;
-			__enable_irq();
-		} else if (block_left_2nd == NULL) {
-			block_left_2nd = block;
-			__enable_irq();
-		} else {
-			audio_block_t *tmp = block_left_1st;
-			block_left_1st = block_left_2nd;
-			block_left_2nd = block;
-			block_left_offset = 0;
-			__enable_irq();
-			release(tmp);
-		}
-	}
-	block = receiveReadOnly(1); // input 1 = right channel
-	if (block) {
-		__disable_irq();
-		if (block_right_1st == NULL) {
-			block_right_1st = block;
-			block_right_offset = 0;
-			__enable_irq();
-		} else if (block_right_2nd == NULL) {
-			block_right_2nd = block;
-			__enable_irq();
-		} else {
-			audio_block_t *tmp = block_right_1st;
-			block_right_1st = block_right_2nd;
-			block_right_2nd = block;
-			block_right_offset = 0;
-			__enable_irq();
-			release(tmp);
-		}
-	}
-}
-
 #if defined(KINETISK) || defined(KINETISL)
 // MCLK needs to be 48e6 / 1088 * 256 = 11.29411765 MHz -> 44.117647 kHz sample rate
 //
@@ -430,138 +387,156 @@ void AudioOutputI2S::config_i2s(void)
 
 #endif
 }
-
-
-/******************************************************************/
-
-void AudioOutputI2Sslave::begin(void)
+#else
+void AudioOutputI2S::begin(void)
 {
+	i2s = new Adafruit_ZeroI2S;
+	dma = new Adafruit_ZeroDMA;
 
-	dma.begin(true); // Allocate the DMA channel first
+	stat = dma->allocate();
 
 	block_left_1st = NULL;
 	block_right_1st = NULL;
 
-	AudioOutputI2Sslave::config_i2s();
+	config_i2s();
 
-#if defined(KINETISK)
-	CORE_PIN22_CONFIG = PORT_PCR_MUX(6); // pin 22, PTC1, I2S0_TXD0
-	dma.TCD->SADDR = i2s_tx_buffer;
-	dma.TCD->SOFF = 2;
-	dma.TCD->ATTR = DMA_TCD_ATTR_SSIZE(1) | DMA_TCD_ATTR_DSIZE(1);
-	dma.TCD->NBYTES_MLNO = 2;
-	dma.TCD->SLAST = -sizeof(i2s_tx_buffer);
-	dma.TCD->DADDR = (void *)((uint32_t)&I2S0_TDR0 + 2);
-	dma.TCD->DOFF = 0;
-	dma.TCD->CITER_ELINKNO = sizeof(i2s_tx_buffer) / 2;
-	dma.TCD->DLASTSGA = 0;
-	dma.TCD->BITER_ELINKNO = sizeof(i2s_tx_buffer) / 2;
-	dma.TCD->CSR = DMA_TCD_CSR_INTHALF | DMA_TCD_CSR_INTMAJOR;
-	dma.triggerAtHardwareEvent(DMAMUX_SOURCE_I2S0_TX);
-	dma.enable();
+	dma->setTrigger(I2S_DMAC_ID_TX_0);
+	dma->setAction(DMA_TRIGGER_ACTON_BEAT);
 
-	I2S0_TCSR = I2S_TCSR_SR;
-	I2S0_TCSR = I2S_TCSR_TE | I2S_TCSR_BCE | I2S_TCSR_FRDE;
-
-#elif defined(__IMXRT1062__)
-	CORE_PIN7_CONFIG  = 3;  //1:TX_DATA0
-	dma.TCD->SADDR = i2s_tx_buffer;
-	dma.TCD->SOFF = 2;
-	dma.TCD->ATTR = DMA_TCD_ATTR_SSIZE(1) | DMA_TCD_ATTR_DSIZE(1);
-	dma.TCD->NBYTES_MLNO = 2;
-	dma.TCD->SLAST = -sizeof(i2s_tx_buffer);
-	dma.TCD->DOFF = 0;
-	dma.TCD->CITER_ELINKNO = sizeof(i2s_tx_buffer) / 2;
-	dma.TCD->DLASTSGA = 0;
-	dma.TCD->BITER_ELINKNO = sizeof(i2s_tx_buffer) / 2;
-	dma.TCD->DADDR = (void *)((uint32_t)&I2S1_TDR0 + 2);
-	dma.TCD->CSR = DMA_TCD_CSR_INTHALF | DMA_TCD_CSR_INTMAJOR;
-	dma.triggerAtHardwareEvent(DMAMUX_SOURCE_SAI1_TX);
-	dma.enable();
-
-	I2S1_RCSR |= I2S_RCSR_RE | I2S_RCSR_BCE;
-	I2S1_TCSR = I2S_TCSR_TE | I2S_TCSR_BCE | I2S_TCSR_FRDE;
-#endif
+	desc = dma->addDescriptor(
+	  i2s_tx_buffer,						// move data from here
+	  (void *)(&I2S->TXDATA.reg),			// to here
+	  AUDIO_BLOCK_SAMPLES,               // this many...
+	  DMA_BEAT_SIZE_HWORD,               // bytes/hword/words
+	  true,                             // increment source addr?
+	  false);
 
 	update_responsibility = update_setup();
-	dma.attachInterrupt(isr);
+	dma->setCallback(AudioOutputI2S::isr);
+
+	dma->startJob();
+
 }
 
-void AudioOutputI2Sslave::config_i2s(void)
+
+void AudioOutputI2S::isr(Adafruit_ZeroDMA *dma)
 {
-#if defined(KINETISK)
-	SIM_SCGC6 |= SIM_SCGC6_I2S;
-	SIM_SCGC7 |= SIM_SCGC7_DMA;
-	SIM_SCGC6 |= SIM_SCGC6_DMAMUX;
+	int16_t *dest;
+	audio_block_t *blockL, *blockR;
+	uint32_t saddr, offsetL, offsetR;
 
-	// if either transmitter or receiver is enabled, do nothing
-	if (I2S0_TCSR & I2S_TCSR_TE) return;
-	if (I2S0_RCSR & I2S_RCSR_RE) return;
+	saddr = desc->SRCADDR.reg;
+	saddr -= (AUDIO_BLOCK_SAMPLES) * 2;
 
-	// Select input clock 0
-	// Configure to input the bit-clock from pin, bypasses the MCLK divider
-	I2S0_MCR = I2S_MCR_MICS(0);
-	I2S0_MDR = 0;
+	if (saddr == (uint32_t)i2s_tx_buffer) {
+		// DMA is transmitting the second half of the buffer
+		// so we must fill the first half
+		dest = (int16_t *)i2s_tx_buffer;
+		dma->changeDescriptor(desc, (int16_t *)&i2s_tx_buffer[AUDIO_BLOCK_SAMPLES/2]);
+	} else {
+		// DMA is transmitting the first half of the buffer
+		// so we must fill the second half
+		dest = (int16_t *)&i2s_tx_buffer[AUDIO_BLOCK_SAMPLES/2];
+		dma->changeDescriptor(desc, (int16_t *)i2s_tx_buffer);
+		if (AudioOutputI2S::update_responsibility) AudioStream::update_all();
+	}
+	dma->startJob();
 
-	// configure transmitter
-	I2S0_TMR = 0;
-	I2S0_TCR1 = I2S_TCR1_TFW(1);  // watermark at half fifo size
-	I2S0_TCR2 = I2S_TCR2_SYNC(0) | I2S_TCR2_BCP;
+	blockL = AudioOutputI2S::block_left_1st;
+	blockR = AudioOutputI2S::block_right_1st;
+	offsetL = AudioOutputI2S::block_left_offset;
+	offsetR = AudioOutputI2S::block_right_offset;
 
-	I2S0_TCR3 = I2S_TCR3_TCE;
-	I2S0_TCR4 = I2S_TCR4_FRSZ(1) | I2S_TCR4_SYWD(31) | I2S_TCR4_MF
-		| I2S_TCR4_FSE | I2S_TCR4_FSP;
+	if (blockL && blockR) {
+		memcpy_tointerleaveLR(dest, blockL->data + offsetL, blockR->data + offsetR);
+		offsetL += AUDIO_BLOCK_SAMPLES / 2;
+		offsetR += AUDIO_BLOCK_SAMPLES / 2;
+	} else if (blockL) {
+		memcpy_tointerleaveL(dest, blockL->data + offsetL);
+		offsetL += AUDIO_BLOCK_SAMPLES / 2;
+	} else if (blockR) {
+		memcpy_tointerleaveR(dest, blockR->data + offsetR);
+		offsetR += AUDIO_BLOCK_SAMPLES / 2;
+	} else {
+		memset(dest,0,AUDIO_BLOCK_SAMPLES * 2);
+		return;
+	}
 
-	I2S0_TCR5 = I2S_TCR5_WNW(31) | I2S_TCR5_W0W(31) | I2S_TCR5_FBT(31);
-
-	// configure receiver (sync'd to transmitter clocks)
-	I2S0_RMR = 0;
-	I2S0_RCR1 = I2S_RCR1_RFW(1);
-	I2S0_RCR2 = I2S_RCR2_SYNC(1) | I2S_TCR2_BCP;
-
-	I2S0_RCR3 = I2S_RCR3_RCE;
-	I2S0_RCR4 = I2S_RCR4_FRSZ(1) | I2S_RCR4_SYWD(31) | I2S_RCR4_MF
-		| I2S_RCR4_FSE | I2S_RCR4_FSP | I2S_RCR4_FSD;
-
-	I2S0_RCR5 = I2S_RCR5_WNW(31) | I2S_RCR5_W0W(31) | I2S_RCR5_FBT(31);
-
-	// configure pin mux for 3 clock signals
-	CORE_PIN23_CONFIG = PORT_PCR_MUX(6); // pin 23, PTC2, I2S0_TX_FS (LRCLK)
-	CORE_PIN9_CONFIG  = PORT_PCR_MUX(6); // pin  9, PTC3, I2S0_TX_BCLK
-	CORE_PIN11_CONFIG = PORT_PCR_MUX(6); // pin 11, PTC6, I2S0_MCLK
-
-#elif defined(__IMXRT1062__)
-
-	CCM_CCGR5 |= CCM_CCGR5_SAI1(CCM_CCGR_ON);
-
-	// if either transmitter or receiver is enabled, do nothing
-	if (I2S1_TCSR & I2S_TCSR_TE) return;
-	if (I2S1_RCSR & I2S_RCSR_RE) return;
-
-	// not using MCLK in slave mode - hope that's ok?
-	//CORE_PIN23_CONFIG = 3;  // AD_B1_09  ALT3=SAI1_MCLK
-	CORE_PIN21_CONFIG = 3;  // AD_B1_11  ALT3=SAI1_RX_BCLK
-	CORE_PIN20_CONFIG = 3;  // AD_B1_10  ALT3=SAI1_RX_SYNC
-	IOMUXC_SAI1_RX_BCLK_SELECT_INPUT = 1; // 1=GPIO_AD_B1_11_ALT3, page 868
-	IOMUXC_SAI1_RX_SYNC_SELECT_INPUT = 1; // 1=GPIO_AD_B1_10_ALT3, page 872
-
-	// configure transmitter
-	I2S1_TMR = 0;
-	I2S1_TCR1 = I2S_TCR1_RFW(1);  // watermark at half fifo size
-	I2S1_TCR2 = I2S_TCR2_SYNC(1) | I2S_TCR2_BCP;
-	I2S1_TCR3 = I2S_TCR3_TCE;
-	I2S1_TCR4 = I2S_TCR4_FRSZ(1) | I2S_TCR4_SYWD(31) | I2S_TCR4_MF
-		| I2S_TCR4_FSE | I2S_TCR4_FSP | I2S_RCR4_FSD;
-	I2S1_TCR5 = I2S_TCR5_WNW(31) | I2S_TCR5_W0W(31) | I2S_TCR5_FBT(31);
-
-	// configure receiver
-	I2S1_RMR = 0;
-	I2S1_RCR1 = I2S_RCR1_RFW(1);
-	I2S1_RCR2 = I2S_RCR2_SYNC(0) | I2S_TCR2_BCP;
-	I2S1_RCR3 = I2S_RCR3_RCE;
-	I2S1_RCR4 = I2S_RCR4_FRSZ(1) | I2S_RCR4_SYWD(31) | I2S_RCR4_MF
-		| I2S_RCR4_FSE | I2S_RCR4_FSP;
-	I2S1_RCR5 = I2S_RCR5_WNW(31) | I2S_RCR5_W0W(31) | I2S_RCR5_FBT(31);
+	if (offsetL < AUDIO_BLOCK_SAMPLES) {
+		AudioOutputI2S::block_left_offset = offsetL;
+	} else {
+		AudioOutputI2S::block_left_offset = 0;
+		AudioStream::release(blockL);
+		AudioOutputI2S::block_left_1st = AudioOutputI2S::block_left_2nd;
+		AudioOutputI2S::block_left_2nd = NULL;
+	}
+	if (offsetR < AUDIO_BLOCK_SAMPLES) {
+		AudioOutputI2S::block_right_offset = offsetR;
+	} else {
+		AudioOutputI2S::block_right_offset = 0;
+		AudioStream::release(blockR);
+		AudioOutputI2S::block_right_1st = AudioOutputI2S::block_right_2nd;
+		AudioOutputI2S::block_right_2nd = NULL;
+	}
+}
+void AudioOutputI2S::config_i2s(void)
+{
+//check that i2s has not already been configured
+	//if(!I2S->CTRLA.bit.ENABLE)
+	i2s->begin(I2S_16_BIT, 44100);
+	i2s->enableMCLK();
+	i2s->enableTx();
+	i2s->enableRx();
+}
 
 #endif
+
+
+
+void AudioOutputI2S::update(void)
+{
+	// null audio device: discard all incoming data
+	//if (!active) return;
+	//audio_block_t *block = receiveReadOnly();
+	//if (block) release(block);
+
+	audio_block_t *block;
+	block = receiveReadOnly(0); // input 0 = left channel
+	if (block) {
+		__disable_irq();
+		if (block_left_1st == NULL) {
+			block_left_1st = block;
+			block_left_offset = 0;
+			__enable_irq();
+		} else if (block_left_2nd == NULL) {
+			block_left_2nd = block;
+			__enable_irq();
+		} else {
+			audio_block_t *tmp = block_left_1st;
+			block_left_1st = block_left_2nd;
+			block_left_2nd = block;
+			block_left_offset = 0;
+			__enable_irq();
+			release(tmp);
+		}
+	}
+	block = receiveReadOnly(1); // input 1 = right channel
+	if (block) {
+		__disable_irq();
+		if (block_right_1st == NULL) {
+			block_right_1st = block;
+			block_right_offset = 0;
+			__enable_irq();
+		} else if (block_right_2nd == NULL) {
+			block_right_2nd = block;
+			__enable_irq();
+		} else {
+			audio_block_t *tmp = block_right_1st;
+			block_right_1st = block_right_2nd;
+			block_right_2nd = block;
+			block_right_offset = 0;
+			__enable_irq();
+			release(tmp);
+		}
+	}
 }

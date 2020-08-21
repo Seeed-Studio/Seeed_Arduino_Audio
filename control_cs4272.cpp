@@ -98,11 +98,21 @@ bool AudioControlCS4272::enable(void)
 	pinMode(CS4272_RESET_PIN, OUTPUT);
 
 	// Drive pin low
+#ifndef SEEED_WIO_TERMINAL 
 	digitalWriteFast(CS4272_RESET_PIN, LOW);
+#else
+	digitalWrite(CS4272_RESET_PIN,LOW);
+#endif
+
 	delay(1);
 
 	// Release Reset
+#ifndef SEEED_WIO_TERMINAL 
 	digitalWriteFast(CS4272_RESET_PIN, HIGH);
+#else
+	digitalWrite(CS4272_RESET_PIN,HIGH);
+#endif
+
 	delay(2);
 
 	// Set power down and control port enable as spec'd in the 
