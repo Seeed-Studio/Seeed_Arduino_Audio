@@ -29,7 +29,12 @@
 
 #include "Arduino.h"
 #include "AudioStream.h"
+#ifndef SEEED_WIO_TERMINAL 
 #include "SD.h"
+#else
+#include <Seeed_FS.h>
+#include "SD/Seeed_SD.h"
+#endif
 
 class AudioPlaySdWav : public AudioStream
 {
@@ -43,6 +48,7 @@ public:
 	uint32_t lengthMillis(void);
 	virtual void update(void);
 private:
+
 	File wavfile;
 	bool consume(uint32_t size);
 	bool parse_format(void);

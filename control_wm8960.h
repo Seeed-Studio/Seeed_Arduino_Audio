@@ -4,11 +4,18 @@
 #include "AudioControl.h"
 
 #define WM8960_ADDRESS  0x1A //AUDIO CODEC ADDRESS
+#define Clocking_1 0x04
+#define ADC_and_DAC_Control_1 0x05
 #define Left_DAC_Volume 0x0A
 #define Right_DAC_Volume 0x0B
 #define Power_Management_1 0x19
 #define Power_Management_2 0x1A
+#define Left_Out_Mix 0x22
+#define Right_Out_Mix 0x25
+#define Left_Speaker_Volume 0x28
+#define Right_Speaker_Volume 0x29
 #define Power_Management_3 0x2F
+
 
 
 //resgister value

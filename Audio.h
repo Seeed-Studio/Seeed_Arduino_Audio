@@ -94,7 +94,7 @@
 #include "filter_variable.h"
 #include "output_i2s.h"
 #include "synth_waveform.h"
-
+#include "play_sd_wav.h"
 #ifndef SEEED_WIO_TERMINAL 
 #include "effect_delay_ext.h"
 #include "input_adc.h"
@@ -128,7 +128,6 @@
 #include "play_memory.h"
 #include "play_queue.h"
 #include "play_sd_raw.h"
-#include "play_sd_wav.h"
 #include "play_serialflash_raw.h"
 #include "record_queue.h"
 #include "synth_tonesweep.h"
@@ -140,5 +139,7 @@
 #include "synth_simple_drum.h"
 #include "synth_pwm.h"
 #include "synth_wavetable.h"
+#else
+#include "elapsedMillis.h"
 #endif
 #endif

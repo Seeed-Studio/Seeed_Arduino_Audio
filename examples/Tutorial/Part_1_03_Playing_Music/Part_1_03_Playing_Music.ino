@@ -10,17 +10,24 @@
 
 #include <Audio.h>
 #include <Wire.h>
+#ifndef SEEED_WIO_TERMINAL 
 #include <SPI.h>
 #include <SD.h>
 #include <SerialFlash.h>
+#else
+#include <Seeed_FS.h>
+#include "SD/Seeed_SD.h"
+#endif
+
 
 AudioPlaySdWav           playSdWav1;
 AudioOutputI2S           i2s1;
 AudioConnection          patchCord1(playSdWav1, 0, i2s1, 0);
 AudioConnection          patchCord2(playSdWav1, 1, i2s1, 1);
-AudioControlSGTL5000     sgtl5000_1;
-
+// AudioControlSGTL5000     sgtl5000_1;
+AudioControlWM8960 wm8960;
 // Use these with the Teensy Audio Shield
+#ifndef SEEED_WIO_TERMINAL 
 #define SDCARD_CS_PIN    10
 #define SDCARD_MOSI_PIN  7
 #define SDCARD_SCK_PIN   14
@@ -34,13 +41,17 @@ AudioControlSGTL5000     sgtl5000_1;
 //#define SDCARD_CS_PIN    4
 //#define SDCARD_MOSI_PIN  11
 //#define SDCARD_SCK_PIN   13
-
+#endif
 
 void setup() {
   Serial.begin(9600);
   AudioMemory(8);
-  sgtl5000_1.enable();
-  sgtl5000_1.volume(0.5);
+  // sgtl5000_1.enable();
+  // sgtl5000_1.volume(0.5);
+  while (!Serial) {};
+  wm8960.enable();
+  wm8960.volume(0.7);
+#ifndef SEEED_WIO_TERMINAL 
   SPI.setMOSI(SDCARD_MOSI_PIN);
   SPI.setSCK(SDCARD_SCK_PIN);
   if (!(SD.begin(SDCARD_CS_PIN))) {
@@ -49,6 +60,12 @@ void setup() {
       delay(500);
     }
   }
+#else
+  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,4000000UL)) {
+      Serial.println("Card Mount Failed");
+      return;
+  }
+#endif
   delay(1000);
 }
 
