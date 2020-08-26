@@ -31,19 +31,19 @@ bool AudioControlWM8960::enable(void)
   this->Write(Digital_Audio_Interface_Format, 1<<1 | 1<<6);
   // this->Write(Digital_Audio_Interface_Format, 1<<1);
   //Configure HP_L and HP_R OUTPUTS
-  this->Write(0x02, 0x006F | 0x0100);  //LOUT1 Volume Set
-  this->Write(0x03, 0x006F | 0x0100);  //ROUT1 Volume Set
+  this->Write(LOUT1_volume, 0x006F | 0x0100);  //LOUT1 Volume Set
+  this->Write(ROUT1_volume, 0x006F | 0x0100);  //ROUT1 Volume Set
   
   //Configure SPK_RP and SPK_RN
   this->Write(Left_Speaker_Volume, 0x7F | 1<<8 ); //Left Speaker Volume
   this->Write(Right_Speaker_Volume, 0x7F | 1<<8 ); //Right Speaker Volume
 
   //Enable the OUTPUTS
-  this->Write(0x31, 0x00F7); //Enable Class D Speaker Outputs
+  this->Write(Class_D_Control_1, 0x00F7); //Enable Class D Speaker Outputs
   
   //Configure DAC volume
-  this->Write(0x0a, 0x00FF | 0x0100);
-  this->Write(0x0b, 0x00FF | 0x0100);
+  this->Write(Left_DAC_Volume, 0x00FF | 0x0100);
+  this->Write(Right_DAC_Volume, 0x00FF | 0x0100);
   
   //3D
 //  this->Write(0x10, 0x001F);
@@ -53,15 +53,15 @@ bool AudioControlWM8960::enable(void)
   this->Write(Right_Out_Mix, 1<<8);
   
   //Jack Detect
-  this->Write(0x18, 1<<6 | 0<<5);
-  this->Write(0x17, 0x01C3);
+  this->Write(Additional_control_2, 1<<6 | 0<<5);
+  this->Write(Additional_control_1, 0x01C3);
   //set GPIO as SYSCLK output
-  this->Write(0x30, 0x0009 | 1<<6);//0x000D,0x0005
-  
-  this->Write(0x34, 0x0037);
-  this->Write(0x35, 0x0086);
-  this->Write(0x36, 0x00C2);
-  this->Write(0x37, 0x0027);
+  this->Write(Additional_control_4, 0x0009 | 1<<6);//0x000D,0x0005
+  //config f clock to 44100 hz
+  this->Write(PLL_N, 0x0037);
+  this->Write(PLL_K_1, 0x0086);
+  this->Write(PLL_K_2, 0x00C2);
+  this->Write(PLL_K_3, 0x0027);
   return true;
 }
 /** 
