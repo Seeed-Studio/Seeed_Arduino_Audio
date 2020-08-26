@@ -11,25 +11,25 @@ bool AudioControlWM8960::enable(void)
 
   // Serial.println("WM8960 INIT...");
   //Reset Device
-  if (! this->Write(0x0f, 0x0000))return false;
+  if (! this->Write(Reset, 0x0000))return false;
   delay(100);
   // Serial.println("WM8960 reset completed !!\r\n");
 
   //Set Power Source
   this->Write(Power_Management_1, 1<<8 | 1<<7 | 1<<6);
-  this->Write(Power_Management_2, 1<<8 | 1<<7 | 1<<6 | 1<<5 | 1<<4 | 1<<3);
+  // this->Write(Power_Management_2, 1<<8 | 1<<7 | 1<<6 | 1<<5 | 1<<4 | 1<<3 | 1<<0);
+  this->Write(Power_Management_2, 0x01f9);
   this->Write(Power_Management_3, 1<<3 | 1<<2);
   //Configure clock
   //MCLK->div1->SYSCLK->DAC/ADC sample Freq = 24MHz(MCLK) / 2*256 = 46.875kHz
-  this->Write(Clocking_1, 1<<4);
-  
+  this->Write(Clocking_1, 0x0091);
+  this->Write(Clocking_2, 0x01ca);
   //Configure ADC/DAC
   this->Write(ADC_and_DAC_Control_1, 1 << 2 | 1 << 1 );
-  
   //Configure audio interface
-  //I2S format 16 bits word length
-  this->Write(0x07, 0x0002);
-  
+  //I2S format 16 bits word length and set to master mode
+  this->Write(Digital_Audio_Interface_Format, 1<<1 | 1<<6);
+  // this->Write(Digital_Audio_Interface_Format, 1<<1);
   //Configure HP_L and HP_R OUTPUTS
   this->Write(0x02, 0x006F | 0x0100);  //LOUT1 Volume Set
   this->Write(0x03, 0x006F | 0x0100);  //ROUT1 Volume Set
@@ -37,7 +37,7 @@ bool AudioControlWM8960::enable(void)
   //Configure SPK_RP and SPK_RN
   this->Write(Left_Speaker_Volume, 0x7F | 1<<8 ); //Left Speaker Volume
   this->Write(Right_Speaker_Volume, 0x7F | 1<<8 ); //Right Speaker Volume
-  
+
   //Enable the OUTPUTS
   this->Write(0x31, 0x00F7); //Enable Class D Speaker Outputs
   
@@ -55,8 +55,13 @@ bool AudioControlWM8960::enable(void)
   //Jack Detect
   this->Write(0x18, 1<<6 | 0<<5);
   this->Write(0x17, 0x01C3);
-  this->Write(0x30, 0x0009);//0x000D,0x0005
+  //set GPIO as SYSCLK output
+  this->Write(0x30, 0x0009 | 1<<6);//0x000D,0x0005
   
+  this->Write(0x34, 0x0037);
+  this->Write(0x35, 0x0086);
+  this->Write(0x36, 0x00C2);
+  this->Write(0x37, 0x0027);
   return true;
 }
 /** 
