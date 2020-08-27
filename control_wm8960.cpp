@@ -53,7 +53,7 @@ bool AudioControlWM8960::enable(void)
   this->Write(Right_Out_Mix, 1<<8);
   
   //Jack Detect
-  this->Write(Additional_control_2, 1<<6 | 0<<5);
+  this->Write(Additional_control_2, 1<<6 | 1<<5);
   this->Write(Additional_control_1, 0x01C3);
   //set GPIO as SYSCLK output
   this->Write(Additional_control_4, 0x0009 | 1<<6);//0x000D,0x0005

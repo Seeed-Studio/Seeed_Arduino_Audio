@@ -67,6 +67,9 @@ void setup() {
   }
 #endif
   delay(1000);
+#ifdef SEEED_WIO_TERMINAL 
+  i2s1.enable_tx();
+#endif 
 }
 
 void loop() {

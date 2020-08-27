@@ -42,6 +42,7 @@ public:
 	AudioOutputI2S(void) : AudioStream(2, inputQueueArray) { begin(); }
 	virtual void update(void);
 	void begin(void);
+	void enable_tx(void);
 	friend class AudioInputI2S;
 #if defined(__IMXRT1062__)
 	friend class AudioOutputI2SQuad;

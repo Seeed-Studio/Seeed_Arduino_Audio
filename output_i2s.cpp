@@ -417,7 +417,11 @@ void AudioOutputI2S::begin(void)
 	dma->startJob();
 
 }
-
+void AudioOutputI2S::enable_tx()
+{
+	i2s = new Adafruit_ZeroI2S;
+	i2s->enableTx();
+}
 
 void AudioOutputI2S::isr(Adafruit_ZeroDMA *dma)
 {
@@ -482,10 +486,11 @@ void AudioOutputI2S::isr(Adafruit_ZeroDMA *dma)
 void AudioOutputI2S::config_i2s(void)
 {
 //check that i2s has not already been configured
+	// AudioControlWM8960 wm8960;
 	//if(!I2S->CTRLA.bit.ENABLE)
 	i2s->begin(I2S_16_BIT, 44100);
 	// i2s->enableMCLK();
-	i2s->enableTx();
+	// i2s->enableTx();
 	// i2s->enableRx();
 }
 
