@@ -24,34 +24,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef play_sd_raw_h_
-#define play_sd_raw_h_
+#ifndef _input_i2s_h_
+#define _input_i2s_h_
 
 #include "Arduino.h"
 #include "AudioStream.h"
 #ifndef SEEED_WIO_TERMINAL 
-#include "SD.h"
+#include "DMAChannel.h"
 #else
-#include <Seeed_FS.h>
-#include "SD/Seeed_SD.h"
+#include "Adafruit_ZeroDMA.h"
+#include "Adafruit_ZeroI2S.h"
 #endif
 
-class AudioPlaySdRaw : public AudioStream
+class AudioInputI2S : public AudioStream
 {
 public:
-	AudioPlaySdRaw(void) : AudioStream(0, NULL) { begin(); }
-	void begin(void);
-	bool play(const char *filename);
-	void stop(void);
-	bool isPlaying(void) { return playing; }
-	uint32_t positionMillis(void);
-	uint32_t lengthMillis(void);
+	AudioInputI2S(void) : AudioStream(0, NULL) { begin(); }
 	virtual void update(void);
+	void begin(void);
+protected:	
+	AudioInputI2S(int dummy): AudioStream(0, NULL) {} // to be used only inside AudioInputI2Sslave !!
+	static bool update_responsibility;
+#ifndef SEEED_WIO_TERMINAL 	
+	static DMAChannel dma;
+	static void isr(void);
+#else
+	static void config_i2s(void);
+	static Adafruit_ZeroI2S *i2s;
+	static Adafruit_ZeroDMA *dma;
+	static DmacDescriptor *desc;
+	static void isr(Adafruit_ZeroDMA *dma);
+#endif
 private:
-	File rawfile;
-	uint32_t file_size;
-	volatile uint32_t file_offset;
-	volatile bool playing;
+	static audio_block_t *block_left;
+	static audio_block_t *block_right;
+	static uint16_t block_offset;
+};
+
+
+class AudioInputI2Sslave : public AudioInputI2S
+{
+public:
+	AudioInputI2Sslave(void) : AudioInputI2S(0) { begin(); }
+	void begin(void);
+	friend void dma_ch1_isr(void);
 };
 
 #endif

@@ -13,9 +13,14 @@
 #include <Bounce.h>
 #include <Audio.h>
 #include <Wire.h>
+#ifndef SEEED_WIO_TERMINAL 
 #include <SPI.h>
 #include <SD.h>
 #include <SerialFlash.h>
+#else
+#include <Seeed_FS.h>
+#include "SD/Seeed_SD.h"
+#endif
 
 // GUItool: begin automatically generated code
 AudioInputI2S            i2s2;           //xy=105,63
@@ -27,7 +32,8 @@ AudioConnection          patchCord1(i2s2, 0, queue1, 0);
 AudioConnection          patchCord2(i2s2, 0, peak1, 0);
 AudioConnection          patchCord3(playRaw1, 0, i2s1, 0);
 AudioConnection          patchCord4(playRaw1, 0, i2s1, 1);
-AudioControlSGTL5000     sgtl5000_1;     //xy=265,212
+// AudioControlSGTL5000     sgtl5000_1;     //xy=265,212
+AudioControlWM8960 wm8960;
 // GUItool: end automatically generated code
 
 // For a stereo recording version, see this forum thread:
@@ -50,6 +56,7 @@ const int myInput = AUDIO_INPUT_LINEIN;
 
 
 // Use these with the Teensy Audio Shield
+#ifndef SEEED_WIO_TERMINAL 
 #define SDCARD_CS_PIN    10
 #define SDCARD_MOSI_PIN  7
 #define SDCARD_SCK_PIN   14
@@ -63,6 +70,7 @@ const int myInput = AUDIO_INPUT_LINEIN;
 //#define SDCARD_CS_PIN    4
 //#define SDCARD_MOSI_PIN  11
 //#define SDCARD_SCK_PIN   13
+#endif
 
 
 // Remember which mode we're doing
@@ -82,20 +90,27 @@ void setup() {
   AudioMemory(60);
 
   // Enable the audio shield, select input, and enable output
-  sgtl5000_1.enable();
-  sgtl5000_1.inputSelect(myInput);
-  sgtl5000_1.volume(0.5);
-
+  // sgtl5000_1.enable();
+  // sgtl5000_1.inputSelect(myInput);
+  // sgtl5000_1.volume(0.5);
+  wm8960.enable();
+  wm8960.volume(0.7);
   // Initialize the SD card
+#ifndef SEEED_WIO_TERMINAL 
   SPI.setMOSI(SDCARD_MOSI_PIN);
   SPI.setSCK(SDCARD_SCK_PIN);
   if (!(SD.begin(SDCARD_CS_PIN))) {
-    // stop here if no SD card, but print a message
     while (1) {
       Serial.println("Unable to access the SD card");
       delay(500);
     }
   }
+#else
+  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,4000000UL)) {
+      Serial.println("Card Mount Failed");
+      return;
+  }
+#endif
 }
 
 

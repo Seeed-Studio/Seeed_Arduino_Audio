@@ -14,7 +14,7 @@ bool AudioControlWM8960::enable(void)
   if (! this->Write(RESET, 0x0000))return false;
   delay(100);
   // Serial.println("WM8960 reset completed !!\r\n");
-
+  /*
   //Set Power Source
   this->Write(POWER_MANAGEMENT_1, 1<<8 | 1<<7 | 1<<6);
   // this->Write(POWER_MANAGEMENT_2, 1<<8 | 1<<7 | 1<<6 | 1<<5 | 1<<4 | 1<<3 | 1<<0);
@@ -28,8 +28,8 @@ bool AudioControlWM8960::enable(void)
   this->Write(ADC_AND_DAC_CONTROL_1, 1 << 2 | 1 << 1 );
   //Configure audio interface
   //I2S format 16 bits word length and set to master mode
-  this->Write(DIGITAL_AUDIO_INTERFACE, 1<<1 | 1<<6);
-  // this->Write(Digital_Audio_Interface_Format, 1<<1);
+  // this->Write(DIGITAL_AUDIO_INTERFACE, 1<<1 | 1<<6);
+  this->Write(DIGITAL_AUDIO_INTERFACE, 1<<1);
   //Configure HP_L and HP_R OUTPUTS
   this->Write(LOUT1_VOLUME, 0x006F | 0x0100);  //LOUT1 Volume Set
   this->Write(ROUT1_VOLUME, 0x006F | 0x0100);  //ROUT1 Volume Set
@@ -46,14 +46,14 @@ bool AudioControlWM8960::enable(void)
   this->Write(RIGHT_DAC_VOLUME, 0x00FF | 0x0100);
   
   //3D
-//  this->Write(0x10, 0x001F);
+  //this->Write(0x10, 0x001F);
   
   //Configure MIXER
   this->Write(LEFT_OUT_MIX, 1<<8);
   this->Write(RIGHT_OUT_MIX, 1<<8);
   
   //Jack Detect
-  this->Write(ADDITIONAL_CONTROL_2, 1<<6 | 1<<5);
+  this->Write(ADDITIONAL_CONTROL_2, 1<<6 | 0<<5); //0 spaeker out 1 headphone out 
   this->Write(ADDITIONAL_CONTROL_1, 0x01C3);
   //set GPIO as SYSCLK output
   this->Write(ADDITIONAL_CONTROL_4, 0x0009 | 1<<6);//0x000D,0x0005
@@ -62,6 +62,12 @@ bool AudioControlWM8960::enable(void)
   this->Write(PLL_K_1, 0x0086);
   this->Write(PLL_K_2, 0x00C2);
   this->Write(PLL_K_3, 0x0027);
+  */
+  uint8_t reg_len = sizeof(wm8960_reg_defaults) / sizeof(wm8960_reg_defaults[0]);
+  for(uint8_t i=0 ;i < reg_len; i++)
+  {
+    this->Write(wm8960_reg_defaults[i][0],wm8960_reg_defaults[i][1]);
+  }
   return true;
 }
 /** 

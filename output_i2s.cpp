@@ -489,9 +489,9 @@ void AudioOutputI2S::config_i2s(void)
 	// AudioControlWM8960 wm8960;
 	//if(!I2S->CTRLA.bit.ENABLE)
 	i2s->begin(I2S_16_BIT, 44100);
-	// i2s->enableMCLK();
-	// i2s->enableTx();
-	// i2s->enableRx();
+	i2s->enableMCLK();
+	i2s->enableTx();
+	i2s->enableRx();
 }
 
 #endif

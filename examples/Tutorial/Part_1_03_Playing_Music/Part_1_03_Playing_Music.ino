@@ -68,6 +68,7 @@ void setup() {
 #endif
   delay(1000);
 #ifdef SEEED_WIO_TERMINAL 
+  // if set I2S to slave mode
   i2s1.enable_tx();
 #endif 
 }
