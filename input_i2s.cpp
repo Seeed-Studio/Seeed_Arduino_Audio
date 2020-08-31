@@ -101,9 +101,9 @@ void AudioInputI2S::begin(void)
 	dma.attachInterrupt(isr);
 #else
 	dma = new Adafruit_ZeroDMA;
+	i2s = new Adafruit_ZeroI2S;
 
 	stat = dma->allocate();
-	i2s = new Adafruit_ZeroI2S(PIN_I2S_FS, PIN_I2S_SCK, PIN_I2S_SDO, PIN_I2S_SDI);
 	AudioInputI2S::config_i2s();
 
 	dma->setTrigger(I2S_DMAC_ID_RX_0);
@@ -111,7 +111,7 @@ void AudioInputI2S::begin(void)
 
 	desc = dma->addDescriptor(
 	 (void *)(&I2S->RXDATA.reg),						// move data from here
-	 i2s_rx_buffer,			// to here
+	  i2s_rx_buffer,			// to here
 	  AUDIO_BLOCK_SAMPLES,               // this many...
 	  DMA_BEAT_SIZE_HWORD,               // bytes/hword/words
 	  false,                             // increment source addr?
@@ -200,9 +200,6 @@ void AudioInputI2S::isr(Adafruit_ZeroDMA *dma)
 			dest_right = &(right->data[offset]);
 			AudioInputI2S::block_offset = offset + AUDIO_BLOCK_SAMPLES/2;
 			do {
-				//n = *src++;
-				//*dest_left++ = (int16_t)n;
-				//*dest_right++ = (int16_t)(n >> 16);
 				*dest_left++ = *src++;
 				*dest_right++ = *src++;
 			} while (src < end);
@@ -214,12 +211,11 @@ void AudioInputI2S::config_i2s(void)
 {
 
 //check that i2s has not already been configured
-	if(!I2S->CTRLA.bit.ENABLE){
-		i2s->begin(I2S_16_BIT, 44100);
-		i2s->enableMCLK();
-		i2s->enableTx();
-		i2s->enableRx();
-	}
+	// if(!I2S->CTRLA.bit.ENABLE){
+	i2s->begin(I2S_16_BIT, 44100);
+	i2s->enableMCLK();
+	i2s->enableTx();
+	i2s->enableRx();
 }
 #endif
 
@@ -280,9 +276,10 @@ void AudioInputI2S::update(void)
 
 /******************************************************************/
 
-#ifndef SEEED_WIO_TERMINAL
+
 void AudioInputI2Sslave::begin(void)
 {
+#ifndef SEEED_WIO_TERMINAL
 	dma.begin(true); // Allocate the DMA channel first
 
 	//block_left_1st = NULL;
@@ -335,6 +332,8 @@ void AudioInputI2Sslave::begin(void)
 	update_responsibility = update_setup();
 	dma.attachInterrupt(isr);
 #endif
-}
+#else
+
 #endif
+}
 

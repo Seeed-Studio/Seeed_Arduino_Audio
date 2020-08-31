@@ -32,8 +32,13 @@ AudioConnection          patchCord1(i2s2, 0, queue1, 0);
 AudioConnection          patchCord2(i2s2, 0, peak1, 0);
 AudioConnection          patchCord3(playRaw1, 0, i2s1, 0);
 AudioConnection          patchCord4(playRaw1, 0, i2s1, 1);
-// AudioControlSGTL5000     sgtl5000_1;     //xy=265,212
+
+#ifndef SEEED_WIO_TERMINAL 
+AudioControlSGTL5000     sgtl5000_1;     //xy=265,212
+#else
 AudioControlWM8960 wm8960;
+#endif
+
 // GUItool: end automatically generated code
 
 // For a stereo recording version, see this forum thread:
@@ -44,11 +49,16 @@ AudioControlWM8960 wm8960;
 // https://github.com/WMXZ-EU/microSoundRecorder/wiki/Hardware-setup
 // https://forum.pjrc.com/threads/52175?p=185386&viewfull=1#post185386
 
+#ifndef SEEED_WIO_TERMINAL 
 // Bounce objects to easily and reliably read the buttons
 Bounce buttonRecord = Bounce(0, 8);
 Bounce buttonStop =   Bounce(1, 8);  // 8 = 8 ms debounce time
 Bounce buttonPlay =   Bounce(2, 8);
-
+#else
+Bounce buttonRecord = Bounce(WIO_KEY_A, 8);
+Bounce buttonStop =   Bounce(WIO_KEY_B, 8);  // 8 = 8 ms debounce time
+Bounce buttonPlay =   Bounce(WIO_KEY_C, 8);
+#endif
 
 // which input on the audio shield will be used?
 const int myInput = AUDIO_INPUT_LINEIN;
@@ -80,21 +90,30 @@ int mode = 0;  // 0=stopped, 1=recording, 2=playing
 File frec;
 
 void setup() {
+  Serial.begin(9600);
   // Configure the pushbutton pins
+#ifndef SEEED_WIO_TERMINAL 
   pinMode(0, INPUT_PULLUP);
   pinMode(1, INPUT_PULLUP);
   pinMode(2, INPUT_PULLUP);
-
+#else
+  pinMode(WIO_KEY_A, INPUT_PULLUP);
+  pinMode(WIO_KEY_B, INPUT_PULLUP);
+  pinMode(WIO_KEY_C, INPUT_PULLUP);
+#endif
   // Audio connections require memory, and the record queue
   // uses this memory to buffer incoming audio.
   AudioMemory(60);
 
   // Enable the audio shield, select input, and enable output
+#ifndef SEEED_WIO_TERMINAL 
   // sgtl5000_1.enable();
   // sgtl5000_1.inputSelect(myInput);
   // sgtl5000_1.volume(0.5);
+#else
   wm8960.enable();
-  wm8960.volume(0.7);
+  wm8960.volume(1);
+#endif
   // Initialize the SD card
 #ifndef SEEED_WIO_TERMINAL 
   SPI.setMOSI(SDCARD_MOSI_PIN);
@@ -115,6 +134,7 @@ void setup() {
 
 
 void loop() {
+  
   // First, read the buttons
   buttonRecord.update();
   buttonStop.update();
@@ -147,6 +167,7 @@ void loop() {
 
   // when using a microphone, continuously adjust gain
   if (myInput == AUDIO_INPUT_MIC) adjustMicLevel();
+  
 }
 
 
@@ -177,7 +198,7 @@ void continueRecording() {
     memcpy(buffer+256, queue1.readBuffer(), 256);
     queue1.freeBuffer();
     // write all 512 bytes to the SD card
-    //elapsedMicros usec = 0;
+    elapsedMicros usec = 0;
     frec.write(buffer, 512);
     // Uncomment these lines to see how long SD writes
     // are taking.  A pair of audio blocks arrives every
@@ -189,8 +210,8 @@ void continueRecording() {
     // approximately 301700 us of audio, to allow time
     // for occasional high SD card latency, as long as
     // the average write time is under 5802 us.
-    //Serial.print("SD write, us=");
-    //Serial.println(usec);
+    Serial.print("SD write, us=");
+    Serial.println(usec);
   }
 }
 
@@ -231,4 +252,3 @@ void adjustMicLevel() {
   // TODO: read the peak1 object and adjust sgtl5000_1.micGain()
   // if anyone gets this working, please submit a github pull request :-)
 }
-
