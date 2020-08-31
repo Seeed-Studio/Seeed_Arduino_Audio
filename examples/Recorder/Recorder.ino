@@ -34,7 +34,7 @@ AudioConnection          patchCord3(playRaw1, 0, i2s1, 0);
 AudioConnection          patchCord4(playRaw1, 0, i2s1, 1);
 
 #ifndef SEEED_WIO_TERMINAL 
-AudioControlSGTL5000     sgtl5000_1;     //xy=265,212
+AudioControlSGTL5000   sgtl5000_1;     //xy=265,212
 #else
 AudioControlWM8960 wm8960;
 #endif
@@ -107,9 +107,9 @@ void setup() {
 
   // Enable the audio shield, select input, and enable output
 #ifndef SEEED_WIO_TERMINAL 
-  // sgtl5000_1.enable();
-  // sgtl5000_1.inputSelect(myInput);
-  // sgtl5000_1.volume(0.5);
+  sgtl5000_1.enable();
+  sgtl5000_1.inputSelect(myInput);
+  sgtl5000_1.volume(0.5);
 #else
   wm8960.enable();
   wm8960.volume(1);
