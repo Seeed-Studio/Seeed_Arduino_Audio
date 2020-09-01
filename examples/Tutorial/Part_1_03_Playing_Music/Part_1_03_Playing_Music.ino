@@ -50,6 +50,7 @@ void setup() {
   // sgtl5000_1.volume(0.5);
   while (!Serial) {};
   wm8960.enable();
+  // wm8960.outputSelect(HEADPHONE);
   wm8960.volume(0.7);
 #ifndef SEEED_WIO_TERMINAL 
   SPI.setMOSI(SDCARD_MOSI_PIN);

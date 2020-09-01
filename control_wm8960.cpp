@@ -154,6 +154,21 @@ bool AudioControlWM8960::inputLevel(float volume)
 
 }
 /** 
+ * @brief output select.
+ * @param Interface: outputInterface type SPEAKER,HEADPHONE
+ * @return true or false
+ */
+bool AudioControlWM8960::outputSelect(outputInterface Interface)
+{
+  uint16_t reg;
+  reg = Read(ADDITIONAL_CONTROL_2);
+  if (Interface)
+    Write(ADDITIONAL_CONTROL_2, reg | 1<<5);
+  else
+    Write(ADDITIONAL_CONTROL_2, reg & ~(1<<5));
+  return true;
+}
+/** 
  * @brief Write data to register of wm8960
  * @param reg: register will be write ,dat : write
  * @return true or false

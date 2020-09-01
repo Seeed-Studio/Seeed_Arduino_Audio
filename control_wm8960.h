@@ -65,6 +65,7 @@ static uint16_t WM8960_REG_VAL[56] =
   0x0000, 0x0000, 0x0040, 0x0000, 0x0000, 0x0050, 0x0050, 0x0000,
   0x0000, 0x0037, 0x004D, 0x0080, 0x0008, 0x0031, 0x0026, 0x00ED
 };
+// #define DEFAULT_MODE
 /*
  * wm8960 register cache
  * We can't read the WM8960 register space when we are
@@ -99,8 +100,8 @@ static const uint16_t wm8960_reg_defaults[][2] = {
 	{ 0x1c, 0x0008 },
 	{ 0x1d, 0x0000 },
 
-	{ 0x20, 0x0138 | 1<<6 | 1<<7 },
-	{ 0x21, 0x0138 | 1<<6 | 1<<7 },
+	{ 0x20, 0x0138 },
+	{ 0x21, 0x0138 },
 	{ 0x22, 0x0170 },
 
 	{ 0x25, 0x0150 },
@@ -123,6 +124,11 @@ static const uint16_t wm8960_reg_defaults[][2] = {
 	{ 0x36, 0x00c2 },
 	{ 0x37, 0x0027 },
 };
+typedef enum
+{
+	SPEAKER = 0,
+	HEADPHONE
+}outputInterface;
 
 class AudioControlWM8960 : public AudioControl
 {
@@ -134,6 +140,7 @@ public:
     bool volume_LR(float L_volume,float R_volume);
 	bool inputLevel(float volume);  // volume 0.0 to 1.0
 	bool inputSelect(int n);
+	bool outputSelect(outputInterface Interface);
 private:
     bool Write(uint8_t reg, uint16_t dat);
     uint16_t Read(uint8_t reg);
