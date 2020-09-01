@@ -141,6 +141,7 @@ public:
 	bool inputLevel(float volume);  // volume 0.0 to 1.0
 	bool inputSelect(int n);
 	bool outputSelect(outputInterface Interface);
+	bool bypassContorl(bool status);
 private:
     bool Write(uint8_t reg, uint16_t dat);
     uint16_t Read(uint8_t reg);

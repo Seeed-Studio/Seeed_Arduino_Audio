@@ -142,6 +142,29 @@ bool AudioControlWM8960::inputSelect(int n)
   return true;
 }
 /** 
+ * @brief enable bypass recommend use headphone to use this function.
+ * @param status :true = enable , false = disable default : disbale.
+ * @return true or false
+ */
+bool AudioControlWM8960::bypassContorl(bool status)
+{
+  // enable bypass switch
+  uint16_t reg1,reg2;
+  reg1 = Read(BYPASS_1);
+  reg2 = Read(BYPASS_2);
+  if (status)
+  {
+    Write(BYPASS_1, reg1 | 1<<7); //enable left input to output
+    Write(BYPASS_2, reg2 | 1<<7); //enable right input to output
+  }
+  else
+  {
+    Write(BYPASS_1, reg1 & ~(1<<7)); //disable left input to output
+    Write(BYPASS_2, reg2 & ~(1<<7)); //disable right input to output   
+  }
+  return true;
+}
+/** 
  * @brief control the input volume of WM8960.
  * @param volume: the volume of Left volume and Right volume.
  * @return true
