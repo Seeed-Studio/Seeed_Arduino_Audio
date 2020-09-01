@@ -481,11 +481,9 @@ void AudioOutputI2S::isr(Adafruit_ZeroDMA *dma)
 void AudioOutputI2S::config_i2s(void)
 {
 //check that i2s has not already been configured
-	//if(!I2S->CTRLA.bit.ENABLE)
-	i2s->begin(I2S_16_BIT, 44100);
-	i2s->enableMCLK();
+	if (!I2S->CTRLA.bit.ENABLE)
+		i2s->begin(I2S_16_BIT, OUTPUT_SAMPLE_HZ);
 	i2s->enableTx();
-	i2s->enableRx();
 }
 
 #endif

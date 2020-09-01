@@ -34,6 +34,7 @@
 #else
 #include "Adafruit_ZeroDMA.h"
 #include "Adafruit_ZeroI2S.h"
+#define OUTPUT_SAMPLE_HZ 44100
 #endif
 
 class AudioOutputI2S : public AudioStream
