@@ -132,8 +132,8 @@ public:
 	bool disable(void);
 	bool volume(float volume);     // volume 0.0 to 1.0
     bool volume_LR(float L_volume,float R_volume);
-	bool inputLevel(float volume) {}  // volume 0.0 to 1.0
-	bool inputSelect(int n) {}
+	bool inputLevel(float volume);  // volume 0.0 to 1.0
+	bool inputSelect(int n);
 private:
     bool Write(uint8_t reg, uint16_t dat);
     uint16_t Read(uint8_t reg);

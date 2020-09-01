@@ -61,16 +61,12 @@ void setup() {
     }
   }
 #else
-  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,4000000UL)) {
+  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,10000000UL)) {
       Serial.println("Card Mount Failed");
       return;
   }
 #endif
   delay(1000);
-#ifdef SEEED_WIO_TERMINAL 
-  // if set I2S to slave mode
-  i2s1.enable_tx();
-#endif 
 }
 
 void loop() {

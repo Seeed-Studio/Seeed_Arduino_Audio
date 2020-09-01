@@ -417,11 +417,6 @@ void AudioOutputI2S::begin(void)
 	dma->startJob();
 
 }
-void AudioOutputI2S::enable_tx()
-{
-	i2s = new Adafruit_ZeroI2S;
-	i2s->enableTx();
-}
 
 void AudioOutputI2S::isr(Adafruit_ZeroDMA *dma)
 {

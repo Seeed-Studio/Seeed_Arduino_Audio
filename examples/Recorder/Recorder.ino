@@ -55,14 +55,17 @@ Bounce buttonRecord = Bounce(0, 8);
 Bounce buttonStop =   Bounce(1, 8);  // 8 = 8 ms debounce time
 Bounce buttonPlay =   Bounce(2, 8);
 #else
-Bounce buttonRecord = Bounce(WIO_KEY_A, 8);
-Bounce buttonStop =   Bounce(WIO_KEY_B, 8);  // 8 = 8 ms debounce time
-Bounce buttonPlay =   Bounce(WIO_KEY_C, 8);
+// Bounce buttonRecord = Bounce(WIO_KEY_A, 8);
+// Bounce buttonStop =   Bounce(WIO_KEY_B, 8);  // 8 = 8 ms debounce time
+// Bounce buttonPlay =   Bounce(WIO_KEY_C, 8);
+Bounce buttonRecord = Bounce(WIO_5S_UP, 8);
+Bounce buttonStop =   Bounce(WIO_5S_DOWN, 8);  // 8 = 8 ms debounce time
+Bounce buttonPlay =   Bounce(WIO_5S_LEFT, 8);
 #endif
 
 // which input on the audio shield will be used?
-const int myInput = AUDIO_INPUT_LINEIN;
-//const int myInput = AUDIO_INPUT_MIC;
+// const int myInput = AUDIO_INPUT_LINEIN;
+const int myInput = AUDIO_INPUT_MIC;
 
 
 // Use these with the Teensy Audio Shield
@@ -97,9 +100,12 @@ void setup() {
   pinMode(1, INPUT_PULLUP);
   pinMode(2, INPUT_PULLUP);
 #else
-  pinMode(WIO_KEY_A, INPUT_PULLUP);
-  pinMode(WIO_KEY_B, INPUT_PULLUP);
-  pinMode(WIO_KEY_C, INPUT_PULLUP);
+  // pinMode(WIO_KEY_A, INPUT_PULLUP);
+  // pinMode(WIO_KEY_B, INPUT_PULLUP);
+  // pinMode(WIO_KEY_C, INPUT_PULLUP);
+  pinMode(WIO_5S_UP, INPUT_PULLUP);
+  pinMode(WIO_5S_DOWN, INPUT_PULLUP);
+  pinMode(WIO_5S_LEFT, INPUT_PULLUP);  
 #endif
   // Audio connections require memory, and the record queue
   // uses this memory to buffer incoming audio.
@@ -112,6 +118,7 @@ void setup() {
   sgtl5000_1.volume(0.5);
 #else
   wm8960.enable();
+  wm8960.inputSelect(myInput);
   wm8960.volume(1);
 #endif
   // Initialize the SD card
@@ -125,7 +132,7 @@ void setup() {
     }
   }
 #else
-  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,4000000UL)) {
+  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,10000000UL)) {
       Serial.println("Card Mount Failed");
       return;
   }
