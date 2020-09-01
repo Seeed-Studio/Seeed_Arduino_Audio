@@ -55,17 +55,17 @@ Bounce buttonRecord = Bounce(0, 8);
 Bounce buttonStop =   Bounce(1, 8);  // 8 = 8 ms debounce time
 Bounce buttonPlay =   Bounce(2, 8);
 #else
-// Bounce buttonRecord = Bounce(WIO_KEY_A, 8);
-// Bounce buttonStop =   Bounce(WIO_KEY_B, 8);  // 8 = 8 ms debounce time
-// Bounce buttonPlay =   Bounce(WIO_KEY_C, 8);
-Bounce buttonRecord = Bounce(WIO_5S_UP, 8);
-Bounce buttonStop =   Bounce(WIO_5S_DOWN, 8);  // 8 = 8 ms debounce time
-Bounce buttonPlay =   Bounce(WIO_5S_LEFT, 8);
+Bounce buttonRecord = Bounce(WIO_KEY_A, 8);
+Bounce buttonStop =   Bounce(WIO_KEY_B, 8);  // 8 = 8 ms debounce time
+Bounce buttonPlay =   Bounce(WIO_KEY_C, 8);
 #endif
 
 // which input on the audio shield will be used?
-// const int myInput = AUDIO_INPUT_LINEIN;
+#ifndef SEEED_WIO_TERMINAL 
+const int myInput = AUDIO_INPUT_LINEIN;
+#else
 const int myInput = AUDIO_INPUT_MIC;
+#endif
 
 
 // Use these with the Teensy Audio Shield
@@ -100,12 +100,9 @@ void setup() {
   pinMode(1, INPUT_PULLUP);
   pinMode(2, INPUT_PULLUP);
 #else
-  // pinMode(WIO_KEY_A, INPUT_PULLUP);
-  // pinMode(WIO_KEY_B, INPUT_PULLUP);
-  // pinMode(WIO_KEY_C, INPUT_PULLUP);
-  pinMode(WIO_5S_UP, INPUT_PULLUP);
-  pinMode(WIO_5S_DOWN, INPUT_PULLUP);
-  pinMode(WIO_5S_LEFT, INPUT_PULLUP);  
+  pinMode(WIO_KEY_A, INPUT_PULLUP);
+  pinMode(WIO_KEY_B, INPUT_PULLUP);
+  pinMode(WIO_KEY_C, INPUT_PULLUP);
 #endif
   // Audio connections require memory, and the record queue
   // uses this memory to buffer incoming audio.
