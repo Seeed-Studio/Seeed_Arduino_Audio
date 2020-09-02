@@ -174,7 +174,7 @@ bool AudioControlWM8960::inputLevel(float volume)
   volume = volume * 0x3f;
   Write(LEFT_INPUT_VOLUME, (uint8_t)volume | 0X0100 );
   Write(RIGHT_INPUT_VOLUME, (uint8_t)volume | 0X0100 );
-
+  return true;
 }
 /** 
  * @brief output select.

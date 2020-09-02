@@ -99,9 +99,9 @@
 #include "play_sd_wav.h"
 #include "record_queue.h"
 #include "play_sd_raw.h"
+#include "input_adc.h"
 #ifndef SEEED_WIO_TERMINAL 
 #include "effect_delay_ext.h"
-#include "input_adc.h"
 #include "input_adcs.h"
 #include "input_i2s2.h"
 #include "input_i2s_quad.h"
