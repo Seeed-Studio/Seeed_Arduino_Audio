@@ -33,7 +33,7 @@
 #include "DMAChannel.h"
 #else
 #include "Adafruit_ZeroDMA.h"
-#include "Adafruit_ZeroI2S.h"
+#include "SAMD_I2S.h"
 #define INPUT_SAMPLE_HZ 44100
 #endif
 
@@ -51,7 +51,7 @@ protected:
 	static void isr(void);
 #else
 	static void config_i2s(void);
-	static Adafruit_ZeroI2S *i2s;
+	static SAMD_I2S *i2s;
 	static Adafruit_ZeroDMA *dma;
 	static DmacDescriptor *desc;
 	static void isr(Adafruit_ZeroDMA *dma);

@@ -40,7 +40,7 @@ bool AudioOutputI2S::update_responsibility = false;
 DMAChannel AudioOutputI2S::dma(false);
 DMAMEM __attribute__((aligned(32))) static uint32_t i2s_tx_buffer[AUDIO_BLOCK_SAMPLES];
 #else
-Adafruit_ZeroI2S *AudioOutputI2S::i2s;
+SAMD_I2S *AudioOutputI2S::i2s;
 Adafruit_ZeroDMA *AudioOutputI2S::dma;
 DmacDescriptor *AudioOutputI2S::desc;
 static ZeroDMAstatus    stat;
@@ -390,7 +390,7 @@ void AudioOutputI2S::config_i2s(void)
 #else
 void AudioOutputI2S::begin(void)
 {
-	i2s = new Adafruit_ZeroI2S;
+	i2s = new SAMD_I2S;
 	dma = new Adafruit_ZeroDMA;
 
 	stat = dma->allocate();
