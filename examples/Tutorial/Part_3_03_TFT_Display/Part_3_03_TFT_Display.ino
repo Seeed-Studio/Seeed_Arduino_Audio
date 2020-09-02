@@ -4,18 +4,40 @@
 // https://hackaday.io/project/8292-microcontroller-audio-workshop-had-supercon-2015
 // 
 // Part 3-3: Add a TFT Display
-
+#ifndef SEEED_WIO_TERMINAL 
 #include <ILI9341_t3.h>
 #include <font_Arial.h> // from ILI9341_t3
+#else
+#include <TFT_eSPI.h> // Hardware-specific library
+#endif
 
 
+
+#ifndef SEEED_WIO_TERMINAL 
 ///////////////////////////////////
 // copy the Design Tool code here
 ///////////////////////////////////
+#else
+#include <Audio.h>
+#include <Wire.h>
+#include <Seeed_FS.h>
+#include "SD/Seeed_SD.h"
+// GUItool: begin automatically generated code
+AudioPlaySdWav           playSdWav1;     //xy=512,375
+AudioAnalyzePeak         peak2;          //xy=787,543
+AudioAnalyzePeak         peak1;          //xy=790,488
+AudioOutputI2S           i2s1;           //xy=827,334
+AudioConnection          patchCord1(playSdWav1, 0, peak1, 0);
+AudioConnection          patchCord2(playSdWav1, 0, i2s1, 0);
+AudioConnection          patchCord3(playSdWav1, 1, peak2, 0);
+AudioConnection          patchCord4(playSdWav1, 1, i2s1, 1);
+AudioControlWM8960 wm8960;
+#endif
+// GUItool: end automatically generated code
 
 
 
-
+#ifndef SEEED_WIO_TERMINAL 
 
 #define TFT_DC      20
 #define TFT_CS      21
@@ -40,6 +62,9 @@ ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MIS
 //#define SDCARD_CS_PIN    4
 //#define SDCARD_MOSI_PIN  11
 //#define SDCARD_SCK_PIN   13
+#else
+TFT_eSPI tft = TFT_eSPI();
+#endif
 
 void setup() {
   Serial.begin(9600);
@@ -47,14 +72,24 @@ void setup() {
   tft.begin();
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextColor(ILI9341_YELLOW);
+#ifndef SEEED_WIO_TERMINAL 
   tft.setFont(Arial_24);
+#endif
   //tft.setTextSize(3);
   tft.setCursor(40, 8);
   tft.println("Peak Meter");
   
   AudioMemory(10);
+#ifndef SEEED_WIO_TERMINAL 
   sgtl5000_1.enable();
   sgtl5000_1.volume(0.5);
+#else
+  wm8960.enable();
+  // wm8960.outputSelect(HEADPHONE);
+  wm8960.volume(0.7);
+#endif
+
+#ifndef SEEED_WIO_TERMINAL 
   SPI.setMOSI(SDCARD_MOSI_PIN);
   SPI.setSCK(SDCARD_SCK_PIN);
   if (!(SD.begin(SDCARD_CS_PIN))) {
@@ -63,6 +98,12 @@ void setup() {
       delay(500);
     }
   }
+#else
+  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,10000000UL)) {
+      Serial.println("Card Mount Failed");
+      return;
+  }
+#endif
   delay(1000);
 }
 
@@ -98,7 +139,9 @@ void loop() {
       // a smarter approach would redraw only the changed portion...
 
       // draw numbers underneath each bar
+#ifndef SEEED_WIO_TERMINAL 
       tft.setFont(Arial_14);
+#endif
       tft.fillRect(60, 284, 40, 16, ILI9341_BLACK);
       tft.setCursor(60, 284);
       tft.print(leftNumber);
