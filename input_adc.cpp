@@ -448,19 +448,15 @@ static ZeroDMAstatus stat;
 void AudioInputAnalog::init(uint8_t pin)
 {
 	dma = new Adafruit_ZeroDMA;
-
-	stat = dma->allocate();
-
+	pin = WIO_MIC;
 	// pinPeripheral(WIO_MIC, PIO_ANALOG);
-	analogRead(WIO_MIC);  // do some pin init  pinPeripheral()
+	analogRead(pin);  // do some pin init  pinPeripheral()
+
 	GCLK->PCHCTRL[ADC1_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos); //use clock generator 1 (48Mhz)
 
 	ADC1->CTRLA.bit.PRESCALER = ADC_CTRLA_PRESCALER_DIV32_Val;
 	ADC1->CTRLB.reg = ADC_CTRLB_RESSEL_16BIT | ADC_CTRLB_FREERUN;
 	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_CTRLB );  //wait for sync
-	
-	ADC1->SAMPCTRL.reg = 5;                        // sampling Time Length
-	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_SAMPCTRL );  //wait for sync
 	
 	ADC1->INPUTCTRL.reg = ADC_INPUTCTRL_MUXNEG_GND;   // No Negative input (Internal Ground)
 	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_INPUTCTRL );  //wait for sync
@@ -482,26 +478,18 @@ void AudioInputAnalog::init(uint8_t pin)
 	// Start conversion
 	ADC1->SWTRIG.bit.START = 1;	
 
+	stat = dma->allocate();
 	dma->setTrigger(ADC1_DMAC_ID_RESRDY);
 	dma->setAction(DMA_TRIGGER_ACTON_BEAT);
-	desc = dma->addDescriptor(
-	(void *)(&ADC1->RESULT.reg),		// move data from here
-	analog_rx_buffer,			// to here
-	AUDIO_BLOCK_SAMPLES / 2,               // this many...
-	DMA_BEAT_SIZE_HWORD,               // bytes/hword/words
-	false,                             // increment source addr?
-	true);
-	desc->BTCTRL.bit.BLOCKACT = DMA_BLOCK_ACTION_INT;
 
 	desc = dma->addDescriptor(
 	(void *)(&ADC1->RESULT.reg),		// move data from here
-	analog_rx_buffer + AUDIO_BLOCK_SAMPLES / 2,			// to here
-	AUDIO_BLOCK_SAMPLES / 2,               // this many...
+	analog_rx_buffer,			        // to here
+	AUDIO_BLOCK_SAMPLES,               // this many...
 	DMA_BEAT_SIZE_HWORD,               // bytes/hword/words
 	false,                             // increment source addr?
 	true);
-	desc->BTCTRL.bit.BLOCKACT = DMA_BLOCK_ACTION_INT;
-	dma->loop(true);
+
 	update_responsibility = update_setup();
 	dma->setCallback(AudioInputAnalog::isr);
 	dma->startJob();
@@ -516,30 +504,30 @@ void AudioInputAnalog::isr(Adafruit_ZeroDMA *dma)
 	audio_block_t *left;
 	daddr = desc->DSTADDR.reg;
 	daddr -= (AUDIO_BLOCK_SAMPLES) * 2;
-	if (daddr < (uint32_t)analog_rx_buffer + sizeof(analog_rx_buffer) / 2)
-	{
-		// DMA is receiving to the first half of the buffer
-		// need to remove data from the second half
-		src = (uint16_t *)&analog_rx_buffer[AUDIO_BLOCK_SAMPLES / 2];
-		end = (uint16_t *)&analog_rx_buffer[AUDIO_BLOCK_SAMPLES];
-		if (update_responsibility)
-			AudioStream::update_all();
+	Serial.println(analog_rx_buffer[0]);
+	if (daddr == (uint32_t)analog_rx_buffer) {
+		// DMA is transmitting the second half of the buffer
+		// so we must fill the first half
+		src = analog_rx_buffer;
+		end = &analog_rx_buffer[AUDIO_BLOCK_SAMPLES/2];
+		dma->changeDescriptor(desc, NULL, &analog_rx_buffer[AUDIO_BLOCK_SAMPLES/2]);
+	} else {
+		// DMA is transmitting the first half of the buffer
+		// so we must fill the second half
+		src = &analog_rx_buffer[AUDIO_BLOCK_SAMPLES/2];
+		end = &analog_rx_buffer[AUDIO_BLOCK_SAMPLES];
+		dma->changeDescriptor(desc, NULL, analog_rx_buffer);
+		if (AudioInputAnalog::update_responsibility) AudioStream::update_all();
 	}
-	else
-	{
-		// DMA is receiving to the second half of the buffer
-		// need to remove data from the first half
-		src = (uint16_t *)&analog_rx_buffer[0];
-		end = (uint16_t *)&analog_rx_buffer[AUDIO_BLOCK_SAMPLES / 2];
-	}
-	left = block_left;
+	dma->startJob();
+	left = AudioInputAnalog::block_left;
 	if (left != NULL)
 	{
-		offset = block_offset;
+		offset = AudioInputAnalog::block_offset;
 		if (offset > AUDIO_BLOCK_SAMPLES / 2)
 			offset = AUDIO_BLOCK_SAMPLES / 2;
 		dest_left = (uint16_t *)&(left->data[offset]);
-		block_offset = offset + AUDIO_BLOCK_SAMPLES / 2;
+		AudioInputAnalog::block_offset = offset + AUDIO_BLOCK_SAMPLES / 2;
 		do
 		{
 			*dest_left++ = *src++;
@@ -574,15 +562,15 @@ void AudioInputAnalog::update(void)
 				block_left = new_left;
 				block_offset = 0;
 				__enable_irq();
-				Serial.println("fail1");
+				// Serial.println("fail1");
 			}
 			else
 			{
 				// the DMA already has blocks, doesn't need this
 				__enable_irq();
 				release(new_left);
-				Serial.print("fail2, offset=");
-				Serial.println(offset);
+				// Serial.print("fail2, offset=");
+				// Serial.println(offset);
 			}
 		}
 		else
@@ -591,7 +579,7 @@ void AudioInputAnalog::update(void)
 			// memory... the system is likely starving for memory!
 			// Sadly, there's nothing we can do.
 			__enable_irq();
-			Serial.println("fail3");
+			// Serial.println("fail3");
 		}
 		return;
 	}
