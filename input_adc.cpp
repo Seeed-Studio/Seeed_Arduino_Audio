@@ -454,7 +454,7 @@ void AudioInputAnalog::init(uint8_t pin)
 
 	GCLK->PCHCTRL[ADC1_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos); //use clock generator 1 (48Mhz)
 
-	ADC1->CTRLA.bit.PRESCALER = ADC_CTRLA_PRESCALER_DIV32_Val;
+	ADC1->CTRLA.bit.PRESCALER = ADC_CTRLA_PRESCALER_DIV8_Val;
 	ADC1->CTRLB.reg = ADC_CTRLB_RESSEL_16BIT | ADC_CTRLB_FREERUN;
 	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_CTRLB );  //wait for sync
 	
@@ -470,8 +470,13 @@ void AudioInputAnalog::init(uint8_t pin)
 	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_AVGCTRL );  //wait for sync
 
 	ADC1->REFCTRL.bit.REFSEL = ADC_REFCTRL_REFSEL_INTVCC1_Val;
+	ADC1->SAMPCTRL.reg = ADC_SAMPCTRL_SAMPLEN(0x04);
 	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_ENABLE ); //wait for sync
 
+	ADC1->DSEQCTRL.reg = ADC_DSEQCTRL_CTRLB | ADC_DSEQCTRL_INPUTCTRL | 
+						ADC_DSEQCTRL_REFCTRL| ADC_DSEQCTRL_AVGCTRL |
+						ADC_DSEQCTRL_SAMPCTRL;
+	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_ENABLE ); //wait for sync
 	ADC1->CTRLA.bit.ENABLE = 0x01;             // Enable ADC
 	while( ADC1->SYNCBUSY.reg & ADC_SYNCBUSY_ENABLE ); //wait for sync
 
