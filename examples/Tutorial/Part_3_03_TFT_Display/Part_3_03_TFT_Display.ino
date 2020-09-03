@@ -63,18 +63,26 @@ ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MIS
 //#define SDCARD_MOSI_PIN  11
 //#define SDCARD_SCK_PIN   13
 #else
-TFT_eSPI tft = TFT_eSPI();
+TFT_eSPI tft_e = TFT_eSPI();
+TFT_eSprite tft = TFT_eSprite(&tft_e);
 #endif
 
 void setup() {
   Serial.begin(9600);
   delay(500);
+#ifndef SEEED_WIO_TERMINAL 
   tft.begin();
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextColor(ILI9341_YELLOW);
-#ifndef SEEED_WIO_TERMINAL 
   tft.setFont(Arial_24);
+#else
+  tft_e.begin();
+  tft_e.fillScreen(ILI9341_BLACK);
+  tft.createSprite(240, 320);
+  tft.fillSprite(TFT_BLACK);
+  tft.setTextColor(ILI9341_YELLOW);
 #endif
+
   //tft.setTextSize(3);
   tft.setCursor(40, 8);
   tft.println("Peak Meter");
@@ -113,7 +121,7 @@ void loop() {
   if (playSdWav1.isPlaying() == false) {
     Serial.println("Start playing");
     //playSdWav1.play("SDTEST1.WAV");
-    //playSdWav1.play("SDTEST2.WAV");
+    // playSdWav1.play("SDTEST2.WAV");
     playSdWav1.play("SDTEST3.WAV");
     //playSdWav1.play("SDTEST4.WAV");
     delay(10); // wait for library to parse WAV info
@@ -139,15 +147,27 @@ void loop() {
       // a smarter approach would redraw only the changed portion...
 
       // draw numbers underneath each bar
+
 #ifndef SEEED_WIO_TERMINAL 
       tft.setFont(Arial_14);
 #endif
       tft.fillRect(60, 284, 40, 16, ILI9341_BLACK);
+#ifndef SEEED_WIO_TERMINAL
       tft.setCursor(60, 284);
+#else
+      tft.setCursor(60+7, 284);
+#endif
       tft.print(leftNumber);
       tft.fillRect(140, 284, 40, 16, ILI9341_BLACK);
+#ifndef SEEED_WIO_TERMINAL
       tft.setCursor(140, 284);
+#else
+      tft.setCursor(140+7, 284);
+#endif
       tft.print(rightNumber);
+#ifdef SEEED_WIO_TERMINAL
+      tft.pushSprite(0, 0);
+#endif 
     }
   }
 }
