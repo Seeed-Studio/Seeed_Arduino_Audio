@@ -1,8 +1,13 @@
 #include <Audio.h>
 #include <Wire.h>
+#ifndef SEEED_WIO_TERMINAL 
 #include <SPI.h>
 #include <SD.h>
 #include <SerialFlash.h>
+#else
+#include <Seeed_FS.h>
+#include "SD/Seeed_SD.h"
+#endif
 #include <Bounce.h>
 
 // WAV files converted to code by wav2sketch
