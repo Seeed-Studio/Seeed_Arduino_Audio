@@ -485,7 +485,10 @@ void AudioOutputI2S::config_i2s(void)
 		i2s->begin(I2S_16_BIT, OUTPUT_SAMPLE_HZ);
 	i2s->enableTx();
 }
-
+// void AudioOutputI2S::enable_rx(void)
+// {
+// 	i2s->enableTx();
+// }
 #endif
 
 

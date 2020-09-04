@@ -114,6 +114,13 @@ bool SAMD_I2S::begin(I2SSlotSize width, int fs_freq, int mck_mult) {
       I2S_CLKCTRL_FSWIDTH_HALF | I2S_CLKCTRL_NBSLOTS(I2S_NUM_SLOTS - 1) |
       I2S_CLKCTRL_SLOTSIZE(width);
 
+  // I2S->CLKCTRL[0].reg =
+  //     I2S_CLKCTRL_MCKSEL_GCLK | I2S_CLKCTRL_MCKOUTDIV(mckoutdiv) |
+  //     I2S_CLKCTRL_MCKDIV(mckdiv) | I2S_CLKCTRL_SCKSEL_SCKPIN |
+  //      I2S_CLKCTRL_FSSEL_FSPIN | I2S_CLKCTRL_BITDELAY_I2S |
+  //     I2S_CLKCTRL_FSWIDTH_HALF | I2S_CLKCTRL_NBSLOTS(I2S_NUM_SLOTS - 1) |
+  //     I2S_CLKCTRL_SLOTSIZE(width);
+
   uint8_t wordSize;
 
   switch (width) {
