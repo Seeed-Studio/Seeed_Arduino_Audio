@@ -100,6 +100,7 @@
 #include "record_queue.h"
 #include "play_sd_raw.h"
 #include "input_adc.h"
+#include "mixer.h"
 #ifndef SEEED_WIO_TERMINAL 
 #include "effect_delay_ext.h"
 #include "input_adcs.h"
@@ -111,7 +112,6 @@
 #include "input_tdm2.h"
 #include "input_pdm.h"
 #include "input_spdif3.h"
-#include "mixer.h"
 #include "output_dac.h"
 #include "output_dacs.h"
 #include "output_i2s2.h"

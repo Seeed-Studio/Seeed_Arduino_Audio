@@ -5,14 +5,33 @@
 // 
 // Part 2-2: Mixers & Playing Multiple Sounds
 
-
+#ifndef SEEED_WIO_TERMINAL 
 ///////////////////////////////////
 // copy the Design Tool code here
 ///////////////////////////////////
+#else
+#include <Audio.h>
+#include <Wire.h>
+#include <Seeed_FS.h>
+#include "SD/Seeed_SD.h"
 
+// GUItool: begin automatically generated code
+AudioPlaySdWav           playSdWav1;     //xy=375,119
+AudioPlaySdWav           playSdWav2;     //xy=375,152
+AudioMixer4              mixer1;         //xy=565,62
+AudioMixer4              mixer2;         //xy=568,198
+AudioOutputI2S           i2s1;           //xy=755,134
+AudioConnection          patchCord1(playSdWav1, 0, mixer1, 0);
+AudioConnection          patchCord2(playSdWav1, 1, mixer2, 0);
+AudioConnection          patchCord3(playSdWav2, 0, mixer1, 1);
+AudioConnection          patchCord4(playSdWav2, 1, mixer2, 1);
+AudioConnection          patchCord5(mixer1, 0, i2s1, 0);
+AudioConnection          patchCord6(mixer2, 0, i2s1, 1);
 
+AudioControlWM8960 wm8960;
 
-
+#endif
+#ifndef SEEED_WIO_TERMINAL 
 // Use these with the Teensy Audio Shield
 #define SDCARD_CS_PIN    10
 #define SDCARD_MOSI_PIN  7
@@ -27,10 +46,11 @@
 //#define SDCARD_CS_PIN    4
 //#define SDCARD_MOSI_PIN  11
 //#define SDCARD_SCK_PIN   13
-
+#endif
 void setup() {
   Serial.begin(9600);
   AudioMemory(8);
+#ifndef SEEED_WIO_TERMINAL 
   sgtl5000_1.enable();
   sgtl5000_1.volume(0.5);
   SPI.setMOSI(SDCARD_MOSI_PIN);
@@ -41,6 +61,16 @@ void setup() {
       delay(500);
     }
   }
+#else
+  while (!Serial) {};
+  wm8960.enable();
+  // wm8960.outputSelect(HEADPHONE);
+  wm8960.volume(1);
+  while (!SD.begin(SDCARD_SS_PIN,SDCARD_SPI,10000000UL)) {
+      Serial.println("Card Mount Failed");
+      return;
+  }
+#endif    
   pinMode(13, OUTPUT); // LED on pin 13
   mixer1.gain(0, 0.5);
   mixer1.gain(1, 0.5);
