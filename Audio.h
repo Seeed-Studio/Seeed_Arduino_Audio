@@ -113,6 +113,7 @@
 #include "synth_simple_drum.h"
 #include "synth_pwm.h"
 #include "synth_wavetable.h"
+#include "play_queue.h"
 #ifndef SEEED_WIO_TERMINAL 
 #include "input_adcs.h"
 #include "input_i2s2.h"
@@ -137,7 +138,6 @@
 #include "output_tdm.h"
 #include "output_tdm2.h"
 #include "output_adat.h"
-#include "play_queue.h"
 #include "play_serialflash_raw.h"
 #else
 #include "elapsedMillis.h"
