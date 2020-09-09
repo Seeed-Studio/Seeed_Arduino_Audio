@@ -113,7 +113,7 @@ bool SAMD_I2S::begin(I2SSlotSize width, int fs_freq, int mck_mult) {
       I2S_CLKCTRL_MCKEN | I2S_CLKCTRL_FSSEL_SCKDIV | I2S_CLKCTRL_BITDELAY_I2S |
       I2S_CLKCTRL_FSWIDTH_HALF | I2S_CLKCTRL_NBSLOTS(I2S_NUM_SLOTS - 1) |
       I2S_CLKCTRL_SLOTSIZE(width);
-
+  // config to slave mode.
   // I2S->CLKCTRL[0].reg =
   //     I2S_CLKCTRL_MCKSEL_GCLK | I2S_CLKCTRL_MCKOUTDIV(mckoutdiv) |
   //     I2S_CLKCTRL_MCKDIV(mckdiv) | I2S_CLKCTRL_SCKSEL_SCKPIN |
@@ -143,11 +143,14 @@ bool SAMD_I2S::begin(I2SSlotSize width, int fs_freq, int mck_mult) {
                     I2S_TXCTRL_WORDADJ_RIGHT | I2S_TXCTRL_DATASIZE(wordSize) |
                     I2S_TXCTRL_TXSAME_ZERO | I2S_TXCTRL_TXDEFAULT_ZERO;
 
-  I2S->RXCTRL.reg = I2S_RXCTRL_DMA_SINGLE | I2S_RXCTRL_MONO_STEREO |
+  I2S->RXCTRL.reg = I2S_RXCTRL_DMA_SINGLE | I2S_RXCTRL_MONO_MONO |
                     I2S_RXCTRL_BITREV_MSBIT | I2S_RXCTRL_EXTEND_ZERO |
+                    // I2S_RXCTRL_WORDADJ_RIGHT | I2S_RXCTRL_DATASIZE(I2S_TXCTRL_DATASIZE_32_Val) |
                     I2S_RXCTRL_WORDADJ_RIGHT | I2S_RXCTRL_DATASIZE(wordSize) |
                     I2S_RXCTRL_SLOTADJ_RIGHT | I2S_RXCTRL_CLKSEL_CLK0 |
                     I2S_RXCTRL_SERMODE_RX;
+                    // I2S_RXCTRL_SERMODE_PDM2;
+
 
   while (I2S->SYNCBUSY.bit.ENABLE)
     ; // wait for sync

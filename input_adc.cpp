@@ -509,7 +509,6 @@ void AudioInputAnalog::isr(Adafruit_ZeroDMA *dma)
 	audio_block_t *left;
 	daddr = desc->DSTADDR.reg;
 	daddr -= (AUDIO_BLOCK_SAMPLES) * 2;
-	Serial.println(analog_rx_buffer[0]);
 	if (daddr == (uint32_t)analog_rx_buffer) {
 		// DMA is transmitting the second half of the buffer
 		// so we must fill the first half
