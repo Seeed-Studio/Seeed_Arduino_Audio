@@ -59,7 +59,8 @@ public:
   void disableRx();
   void enableMCLK();
   void disableMCLK();
-
+  void enablePDMRx();
+  
   bool txReady();
   bool rxReady();
   void write(int32_t left, int32_t right);

@@ -145,12 +145,9 @@ bool SAMD_I2S::begin(I2SSlotSize width, int fs_freq, int mck_mult) {
 
   I2S->RXCTRL.reg = I2S_RXCTRL_DMA_SINGLE | I2S_RXCTRL_MONO_MONO |
                     I2S_RXCTRL_BITREV_MSBIT | I2S_RXCTRL_EXTEND_ZERO |
-                    // I2S_RXCTRL_WORDADJ_RIGHT | I2S_RXCTRL_DATASIZE(I2S_TXCTRL_DATASIZE_32_Val) |
                     I2S_RXCTRL_WORDADJ_RIGHT | I2S_RXCTRL_DATASIZE(wordSize) |
                     I2S_RXCTRL_SLOTADJ_RIGHT | I2S_RXCTRL_CLKSEL_CLK0 |
-                    I2S_RXCTRL_SERMODE_RX;
-                    // I2S_RXCTRL_SERMODE_PDM2;
-
+                    I2S_RXCTRL_SERMODE_RX;                 
 
   while (I2S->SYNCBUSY.bit.ENABLE)
     ; // wait for sync
@@ -412,6 +409,22 @@ void SAMD_I2S::enableRx() {
       ;
   }
 #endif
+}
+void SAMD_I2S::enablePDMRx() {
+  I2S->CTRLA.bit.ENABLE = 0;
+  I2S->CTRLA.bit.CKEN0 = 1;
+  while (I2S->SYNCBUSY.bit.CKEN0)
+    ;
+  I2S->RXCTRL.reg = I2S_RXCTRL_DMA_SINGLE | I2S_RXCTRL_MONO_STEREO |
+                  I2S_RXCTRL_BITREV_MSBIT | I2S_RXCTRL_EXTEND_ZERO |
+                  I2S_RXCTRL_WORDADJ_RIGHT | I2S_RXCTRL_DATASIZE(I2S_TXCTRL_DATASIZE_32_Val) |
+                  I2S_RXCTRL_SLOTADJ_RIGHT | I2S_RXCTRL_CLKSEL_CLK0 |
+                  I2S_RXCTRL_SERMODE_PDM2;  
+
+  I2S->CTRLA.bit.RXEN = 1;
+  while (I2S->SYNCBUSY.bit.RXEN)
+    ;  
+  I2S->CTRLA.bit.ENABLE = 1;
 }
 
 /**************************************************************************/

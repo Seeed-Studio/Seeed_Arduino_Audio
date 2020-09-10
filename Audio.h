@@ -101,6 +101,7 @@
 #include "record_queue.h"
 #include "play_sd_raw.h"
 #include "input_adc.h"
+#include "input_pdm.h"
 #include "mixer.h"
 #include "play_memory.h"
 #include "output_dac.h"
