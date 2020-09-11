@@ -59,9 +59,9 @@ var RED = (function() {
 			// for well defined update order that follows signal flow
 			nns.sort(function(a,b){ return (a.x + a.y/250) - (b.x + b.y/250); });
 			//console.log(JSON.stringify(nns));
-
-			var cpp = "#include <Audio.h>\n#include <Wire.h>\n"
-				+ "#include <SPI.h>\n#include <SD.h>\n#include <SerialFlash.h>\n\n"
+			
+			var cpp = "#include <Bounce.h>\n#include <Audio.h>\n#include <Wire.h>\n"
+				+ "#include <Seeed_FS.h>\n#include <SD/Seeed_SD.h>\n\n"
 				+ "// GUItool: begin automatically generated code\n";
 			// generate code for all audio processing nodes
 			for (var i=0; i<nns.length; i++) {

@@ -15,10 +15,10 @@
 
 #include <Audio.h>
 #include <Wire.h>
-#include <SD.h>
-#include <SPI.h>
 #ifndef SEEED_WIO_TERMINAL 
 #include <SerialFlash.h>
+#include <SD.h>
+#include <SPI.h>
 #endif
 #include <Bounce.h>
 AudioSynthWaveform    waveform1;
