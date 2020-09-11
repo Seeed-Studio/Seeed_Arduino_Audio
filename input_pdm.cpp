@@ -385,6 +385,7 @@ void AudioInputPDM::isr(Adafruit_ZeroDMA *dma)
 			leftover[i] = src[AUDIO_BLOCK_SAMPLES*2 - 14 + i];
 		}
 		// left->data[0] = 0x7FFF;
+    // Serial.println(dest[0]);
 	}
 	//digitalWriteFast(3, LOW);
 

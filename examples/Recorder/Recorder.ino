@@ -9,7 +9,6 @@
 //   Play Button:   pin 2 to GND
 //
 // This example code is in the public domain.
-
 #include <Bounce.h>
 #include <Audio.h>
 #include <Wire.h>
@@ -23,7 +22,7 @@
 #endif
 
 // GUItool: begin automatically generated code
-AudioInputI2S            i2s2;           //xy=105,63
+AudioInputPDM            i2s2;           //xy=105,63
 AudioAnalyzePeak         peak1;          //xy=278,108
 AudioRecordQueue         queue1;         //xy=281,63
 AudioPlaySdRaw           playRaw1;       //xy=302,157
@@ -32,6 +31,8 @@ AudioConnection          patchCord1(i2s2, 0, queue1, 0);
 AudioConnection          patchCord2(i2s2, 0, peak1, 0);
 AudioConnection          patchCord3(playRaw1, 0, i2s1, 0);
 AudioConnection          patchCord4(playRaw1, 0, i2s1, 1);
+
+// GUItool: end automatically generated code
 
 #ifndef SEEED_WIO_TERMINAL 
 AudioControlSGTL5000   sgtl5000_1;     //xy=265,212
@@ -55,9 +56,12 @@ Bounce buttonRecord = Bounce(0, 8);
 Bounce buttonStop =   Bounce(1, 8);  // 8 = 8 ms debounce time
 Bounce buttonPlay =   Bounce(2, 8);
 #else
-Bounce buttonRecord = Bounce(WIO_KEY_A, 8);
-Bounce buttonStop =   Bounce(WIO_KEY_B, 8);  // 8 = 8 ms debounce time
-Bounce buttonPlay =   Bounce(WIO_KEY_C, 8);
+// Bounce buttonRecord = Bounce(WIO_KEY_A, 8);
+// Bounce buttonStop =   Bounce(WIO_KEY_B, 8);  // 8 = 8 ms debounce time
+// Bounce buttonPlay =   Bounce(WIO_KEY_C, 8);
+Bounce buttonRecord = Bounce(WIO_5S_DOWN, 8);
+Bounce buttonStop =   Bounce(WIO_5S_UP, 8);  // 8 = 8 ms debounce time
+Bounce buttonPlay =   Bounce(WIO_5S_LEFT, 8);
 #endif
 
 // which input on the audio shield will be used?
@@ -100,9 +104,12 @@ void setup() {
   pinMode(1, INPUT_PULLUP);
   pinMode(2, INPUT_PULLUP);
 #else
-  pinMode(WIO_KEY_A, INPUT_PULLUP);
-  pinMode(WIO_KEY_B, INPUT_PULLUP);
-  pinMode(WIO_KEY_C, INPUT_PULLUP);
+  // pinMode(WIO_KEY_A, INPUT_PULLUP);
+  // pinMode(WIO_KEY_B, INPUT_PULLUP);
+  // pinMode(WIO_KEY_C, INPUT_PULLUP);
+  pinMode(WIO_5S_UP, INPUT_PULLUP);
+  pinMode(WIO_5S_DOWN, INPUT_PULLUP);
+  pinMode(WIO_5S_LEFT, INPUT_PULLUP);
 #endif
   // Audio connections require memory, and the record queue
   // uses this memory to buffer incoming audio.
@@ -116,7 +123,8 @@ void setup() {
 #else
   wm8960.enable();
   wm8960.inputSelect(myInput);
-  wm8960.volume(1);
+  wm8960.outputSelect(HEADPHONE);
+  wm8960.volume(0.7);
 #endif
   // Initialize the SD card
 #ifndef SEEED_WIO_TERMINAL 
