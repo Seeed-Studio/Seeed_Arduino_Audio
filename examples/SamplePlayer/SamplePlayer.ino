@@ -47,8 +47,12 @@ AudioConnection c10(mix2, 0, dac, 0);
 
 // Create an object to control the audio shield.
 // 
+#ifndef SEEED_WIO_TERMINAL 
 AudioControlSGTL5000 audioShield;
-
+#else
+AudioControlWM8960 audioShield;
+#endif
+#ifndef SEEED_WIO_TERMINAL 
 // Bounce objects to read six pushbuttons (pins 0-5)
 //
 Bounce button0 = Bounce(0, 5);
@@ -57,9 +61,18 @@ Bounce button2 = Bounce(2, 5);
 Bounce button3 = Bounce(3, 5);
 Bounce button4 = Bounce(4, 5);
 Bounce button5 = Bounce(5, 5);
+#else
+Bounce button0 =   Bounce(WIO_KEY_A, 8);
+Bounce button1 =   Bounce(WIO_KEY_B, 8);
+Bounce button2 =   Bounce(WIO_5S_UP, 8);
+Bounce button3 =   Bounce(WIO_5S_DOWN, 8);
+Bounce button4 =   Bounce(WIO_5S_LEFT, 8);  
+Bounce button5 =   Bounce(WIO_5S_RIGHT, 8);
+#endif
 
 
 void setup() {
+#ifndef SEEED_WIO_TERMINAL 
   // Configure the pushbutton pins for pullups.
   // Each button should connect from the pin to GND.
   pinMode(0, INPUT_PULLUP);
@@ -68,15 +81,25 @@ void setup() {
   pinMode(3, INPUT_PULLUP);
   pinMode(4, INPUT_PULLUP);
   pinMode(5, INPUT_PULLUP);
-
+#else
+  pinMode(WIO_KEY_A, INPUT_PULLUP);
+  pinMode(WIO_KEY_B, INPUT_PULLUP);
+  pinMode(WIO_5S_UP, INPUT_PULLUP);
+  pinMode(WIO_5S_DOWN, INPUT_PULLUP);
+  pinMode(WIO_5S_LEFT, INPUT_PULLUP);
+  pinMode(WIO_5S_RIGHT, INPUT_PULLUP); 
+#endif
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
   AudioMemory(10);
 
   // turn on the output
   audioShield.enable();
+#ifndef SEEED_WIO_TERMINAL 
   audioShield.volume(0.5);
-
+#else
+  audioShield.volume(0.8);
+#endif
   // by default the Teensy 3.1 DAC uses 3.3Vp-p output
   // if your 3.3V power has noise, switching to the
   // internal 1.2V reference can give you a clean signal
@@ -121,6 +144,10 @@ void loop() {
     // comment this line to work with Teensy 3.0.
     // the Gong sound is very long, too much for 3.0's memory
     sound4.play(AudioSampleGong);
+    sound0.play(AudioSampleSnare);
+    sound1.play(AudioSampleTomtom);
+    sound2.play(AudioSampleHihat);
+    sound3.play(AudioSampleKick);
   }
   if (button5.fallingEdge()) {
     sound5.play(AudioSampleCashregister);
