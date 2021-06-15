@@ -15,7 +15,7 @@ It is a 16 bit, 44.1 kHz streaming audio library, featuring:
 - Flexible signal routing between library objects
 - Automatic Streaming while your Arduino sketch runs
 
-## Main Audio Library Page
+## Original Audio Library Page
 
 http://www.pjrc.com/teensy/td_libs_Audio.html
 
