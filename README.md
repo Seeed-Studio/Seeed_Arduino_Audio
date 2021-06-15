@@ -2,6 +2,8 @@
 
 This is a fork of https://github.com/PaulStoffregen/Audio.
 
+The original library is written for Teensy 3.x/ Teensy 4.x and this is ported to work with I2S peripherals on SAMD21 and SAMD51 devices.
+
 It is a 16 bit, 44.1 kHz streaming audio library, featuring:
 
 - Polyphonic Playback
