@@ -21,7 +21,7 @@
  * BSD license, all text here must be included in any redistribution.
  *
  */
-
+#ifdef ARDUINO_SAMD_VARIANT_COMPLIANCE
 #include "SAMD_I2S.h"
 #include "wiring_private.h"
 
@@ -608,3 +608,4 @@ void SAMD_I2S::read(int32_t *left, int32_t *right) {
   }
 #endif
 }
+#endif // ARDUINO_SAMD_VARIANT_COMPLIANCE
